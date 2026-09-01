@@ -8,11 +8,14 @@ import BuyersLedger from '@/components/BuyersLedger';
 import Analytics from '@/components/Analytics';
 import ReceivedPayments from '@/components/ReceivedPayments';
 import Expenses from '@/components/Expenses';
+import Auth from '@/components/Auth';
 import { supabase } from '@/lib/supabase';
 import { Purchase, Payment, Buyer, ReceivedPayment, Expense } from '@/types';
-import { LayoutDashboard, ShoppingBag, Users, PieChart, Gem, HandCoins, Receipt } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, PieChart, Gem, HandCoins, Receipt, LogOut } from 'lucide-react';
+import { Session } from '@supabase/supabase-js';
 
 export default function Home() {
+  const [session, setSession] = useState<Session | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [buyers, setBuyers] = useState<Buyer[]>([]);
@@ -21,7 +24,22 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'purchases' | 'ledger' | 'analytics' | 'sales' | 'expenses'>('dashboard');
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const fetchData = async () => {
+    if (!session) return;
     setLoading(true);
     try {
       const [purchasesRes, paymentsRes, buyersRes, receivedRes, expensesRes] = await Promise.all([
@@ -55,8 +73,18 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (session) {
+      fetchData();
+    }
+  }, [session]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  if (!session) {
+    return <Auth />;
+  }
 
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -81,7 +109,7 @@ export default function Home() {
           </div>
         </div>
         
-        <nav className="p-2 md:p-4 flex flex-row md:flex-col gap-1 md:gap-2 overflow-x-auto scrollbar-hide">
+        <nav className="p-2 md:p-4 flex flex-row md:flex-col gap-1 md:gap-2 overflow-x-auto scrollbar-hide flex-1">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -97,19 +125,31 @@ export default function Home() {
             </button>
           ))}
         </nav>
+
+        <div className="p-2 md:p-4 border-t border-slate-800 hidden md:block">
+          <button
+            onClick={handleLogout}
+            className="flex w-full flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-lg transition-all font-medium text-[11px] md:text-sm text-red-400 hover:bg-slate-800 hover:text-red-300"
+          >
+            <LogOut size={20} className="mb-1 md:mb-0 md:w-[18px] md:h-[18px]" />
+            <span className="leading-none">Logout</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto space-y-6 pb-20 md:pb-0">
           
-          <header className="mb-4 md:mb-8 hidden md:block">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-800">
-              {navItems.find(n => n.id === activeTab)?.label}
-            </h2>
-            <p className="text-slate-500 text-xs md:text-sm mt-1">
-              Manage your business data efficiently.
-            </p>
+          <header className="mb-4 md:mb-8 hidden md:block flex justify-between items-center">
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-slate-800">
+                {navItems.find(n => n.id === activeTab)?.label}
+              </h2>
+              <p className="text-slate-500 text-xs md:text-sm mt-1">
+                Manage your business data efficiently.
+              </p>
+            </div>
           </header>
 
           {loading ? (

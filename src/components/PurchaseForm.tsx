@@ -57,44 +57,44 @@ export default function PurchaseForm({ buyers, onSuccess }: PurchaseFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Add New Purchase</h2>
+    <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 p-6">
+      <h2 className="text-xl font-bold mb-4 text-slate-800">Add New Purchase</h2>
       
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm font-medium">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Date</label>
             <input 
               type="date" 
               name="date"
               required
               value={formData.date}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Supplier / Buyer</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Supplier / Buyer</label>
             <select 
               name="buyer_name"
               required
               value={formData.buyer_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
             >
               <option value="" disabled>Select a buyer...</option>
               {buyers.map(b => (
                 <option key={b.id} value={b.name}>{b.name}</option>
               ))}
             </select>
-            {buyers.length === 0 && <p className="text-xs text-red-500 mt-1">Please add a buyer in the Buyer Accounts tab first.</p>}
+            {buyers.length === 0 && <p className="text-xs font-medium text-red-500 mt-1">Please add a buyer in the Buyer Accounts tab first.</p>}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Item Description</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Item Description</label>
           <input 
             type="text" 
             name="item_description"
@@ -102,13 +102,13 @@ export default function PurchaseForm({ buyers, onSuccess }: PurchaseFormProps) {
             value={formData.item_description}
             onChange={handleChange}
             placeholder="e.g. 2x Gold Plated Necklace sets"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Quantity</label>
             <input 
               type="number" 
               name="quantity"
@@ -116,11 +116,11 @@ export default function PurchaseForm({ buyers, onSuccess }: PurchaseFormProps) {
               required
               value={formData.quantity}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Total Price (₹)</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Total Price (₹)</label>
             <input 
               type="number" 
               name="price"
@@ -129,7 +129,7 @@ export default function PurchaseForm({ buyers, onSuccess }: PurchaseFormProps) {
               required
               value={formData.price}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
             />
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function PurchaseForm({ buyers, onSuccess }: PurchaseFormProps) {
         <button 
           type="submit" 
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+          className="w-full mt-2 bg-indigo-600 text-white py-3 px-4 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none disabled:active:scale-100"
         >
           {loading ? 'Adding...' : 'Add Purchase'}
         </button>

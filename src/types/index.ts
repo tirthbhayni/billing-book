@@ -29,11 +29,21 @@ export type ReceivedPayment = {
   amount: number;
 };
 
-export type Expense = {
+export interface Expense {
   id: string;
-  created_at: string;
   date: string;
   category: string;
-  description: string;
   amount: number;
+  description?: string;
+  created_at: string;
+}
+
+export interface SkuCost {
+  sku: string;
+  cost: number;
+}
+
+export interface AppSetting {
+  key: string;
+  value: string;
 };

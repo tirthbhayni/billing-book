@@ -47,41 +47,44 @@ export default function Analytics({ purchases }: AnalyticsProps) {
   const label = view === 'buyer' ? 'Purchase Volume by Buyer (₹)' : 'Purchase Volume by Product (₹)';
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mt-8">
-      <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-        <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-        <div className="flex bg-gray-100 p-1 rounded-md">
+    <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 p-6 mt-8">
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+        <h2 className="text-xl font-bold text-slate-800">{title}</h2>
+        <div className="flex bg-slate-100 p-1.5 rounded-xl">
           <button 
             onClick={() => setView('buyer')}
-            className={`px-3 py-1 rounded text-sm font-medium ${view === 'buyer' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-800'}`}
+            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${view === 'buyer' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}
           >
             By Buyer
           </button>
           <button 
             onClick={() => setView('product')}
-            className={`px-3 py-1 rounded text-sm font-medium ${view === 'product' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-800'}`}
+            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${view === 'product' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}
           >
             By Product
           </button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-80">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-80 pt-4">
         <div className="h-full">
-          <h3 className="text-sm font-medium text-gray-500 mb-4 text-center">{label}</h3>
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 text-center">{label}</h3>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tickFormatter={(val) => `₹${val}`} />
-              <Tooltip formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Purchases']} />
-              <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={(val) => `₹${val}`} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <Tooltip 
+                formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Purchases']} 
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+              />
+              <Bar dataKey="value" fill="#4f46e5" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="h-full flex flex-col items-center">
-          <h3 className="text-sm font-medium text-gray-500 mb-4 text-center">Share of Total</h3>
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 text-center">Share of Total</h3>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -89,7 +92,8 @@ export default function Analytics({ purchases }: AnalyticsProps) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={100}
+                outerRadius={110}
+                innerRadius={60}
                 fill="#8884d8"
                 dataKey="value"
                 label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
@@ -98,7 +102,10 @@ export default function Analytics({ purchases }: AnalyticsProps) {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Purchases']} />
+              <Tooltip 
+                formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Purchases']}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

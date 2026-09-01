@@ -150,11 +150,11 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 text-gray-500 text-sm">
-                    <th className="p-4 font-medium">Date</th>
-                    <th className="p-4 font-medium">Category</th>
-                    <th className="p-4 font-medium">Description</th>
-                    <th className="p-4 font-medium text-right">Amount</th>
-                    <th className="p-4 font-medium text-center">Actions</th>
+                    <th className="p-4 font-medium whitespace-nowrap">Date</th>
+                    <th className="p-4 font-medium whitespace-nowrap">Category</th>
+                    <th className="p-4 font-medium whitespace-nowrap">Description</th>
+                    <th className="p-4 font-medium text-right whitespace-nowrap">Amount</th>
+                    <th className="p-4 font-medium text-center whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm">
@@ -167,15 +167,15 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
                   ) : (
                     expenses.map(e => (
                       <tr key={e.id} className="hover:bg-gray-50">
-                        <td className="p-4">{e.date}</td>
-                        <td className="p-4 font-medium">
+                        <td className="p-4 whitespace-nowrap">{e.date}</td>
+                        <td className="p-4 font-medium whitespace-nowrap">
                           <span className={`px-2 py-1 rounded text-xs ${e.category === 'Packaging' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'}`}>
                             {e.category}
                           </span>
                         </td>
-                        <td className="p-4 text-gray-600">{e.description}</td>
-                        <td className="p-4 text-right font-medium text-red-500">₹{e.amount.toLocaleString()}</td>
-                        <td className="p-4 text-center">
+                        <td className="p-4 text-gray-600 whitespace-nowrap">{e.description}</td>
+                        <td className="p-4 text-right font-medium text-red-500 whitespace-nowrap">₹{e.amount.toLocaleString()}</td>
+                        <td className="p-4 text-center whitespace-nowrap">
                           <button
                             onClick={() => handleDelete(e.id)}
                             disabled={deletingId === e.id}

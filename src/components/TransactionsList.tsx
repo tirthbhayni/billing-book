@@ -101,12 +101,12 @@ export default function TransactionsList({ purchases, onUpdate }: TransactionsLi
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 text-gray-500 text-sm">
-              <th className="p-4 font-medium">Date</th>
-              <th className="p-4 font-medium">Buyer</th>
-              <th className="p-4 font-medium">Item</th>
-              <th className="p-4 font-medium text-center">Qty</th>
-              <th className="p-4 font-medium text-right">Total Price</th>
-              <th className="p-4 font-medium text-center">Actions</th>
+              <th className="p-4 font-medium whitespace-nowrap">Date</th>
+              <th className="p-4 font-medium whitespace-nowrap">Buyer</th>
+              <th className="p-4 font-medium whitespace-nowrap">Item</th>
+              <th className="p-4 font-medium text-center whitespace-nowrap">Qty</th>
+              <th className="p-4 font-medium text-right whitespace-nowrap">Total Price</th>
+              <th className="p-4 font-medium text-center whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
@@ -119,12 +119,12 @@ export default function TransactionsList({ purchases, onUpdate }: TransactionsLi
             ) : (
               filteredPurchases.map(p => (
                 <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="p-4">{p.date}</td>
-                  <td className="p-4 font-medium">{p.buyer_name}</td>
-                  <td className="p-4 text-gray-600">{p.item_description}</td>
-                  <td className="p-4 text-center">{p.quantity}</td>
-                  <td className="p-4 text-right font-medium">₹{p.price.toLocaleString()}</td>
-                  <td className="p-4 text-center">
+                  <td className="p-4 whitespace-nowrap">{p.date}</td>
+                  <td className="p-4 font-medium whitespace-nowrap">{p.buyer_name}</td>
+                  <td className="p-4 text-gray-600 whitespace-nowrap">{p.item_description}</td>
+                  <td className="p-4 text-center whitespace-nowrap">{p.quantity}</td>
+                  <td className="p-4 text-right font-medium whitespace-nowrap">₹{p.price.toLocaleString()}</td>
+                  <td className="p-4 text-center whitespace-nowrap">
                     <button
                       onClick={() => handleDelete(p.id)}
                       disabled={loadingId === p.id}

@@ -96,57 +96,93 @@ export default function Home() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900">
-      {/* Sidebar / Mobile Header */}
-      <aside className="w-full md:w-64 bg-slate-900 text-slate-300 md:min-h-screen flex flex-col shadow-xl flex-shrink-0 z-20 sticky top-0">
-        <div className="p-4 md:p-6 flex items-center justify-center md:justify-start gap-3 bg-slate-950 border-b border-slate-800">
-          <div className="p-1.5 md:p-2 bg-blue-600 rounded-lg text-white">
-            <Gem size={20} className="md:w-6 md:h-6" />
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900 pb-[72px] md:pb-0">
+      
+      {/* Mobile Top Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-slate-950 border-b border-slate-800 sticky top-0 z-30">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-blue-600 rounded-lg text-white">
+            <Gem size={20} />
+          </div>
+          <h1 className="text-lg font-bold text-white tracking-tight">BillingBook</h1>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="p-2 text-slate-400 hover:text-red-400 transition-colors"
+          aria-label="Logout"
+        >
+          <LogOut size={20} />
+        </button>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 min-h-screen flex-col shadow-xl flex-shrink-0 z-20 sticky top-0">
+        <div className="p-6 flex items-center gap-3 bg-slate-950 border-b border-slate-800">
+          <div className="p-2 bg-blue-600 rounded-lg text-white">
+            <Gem size={24} />
           </div>
           <div>
-            <h1 className="text-lg md:text-xl font-bold text-white tracking-tight">BillingBook</h1>
-            <p className="hidden md:block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Jewellery Retail</p>
+            <h1 className="text-xl font-bold text-white tracking-tight">BillingBook</h1>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Jewellery Retail</p>
           </div>
         </div>
         
-        <nav className="p-2 md:p-4 flex flex-row md:flex-col gap-1 md:gap-2 overflow-x-auto scrollbar-hide flex-1">
+        <nav className="p-4 flex flex-col gap-2 flex-1">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-lg transition-all font-medium text-[11px] md:text-sm whitespace-nowrap min-w-[72px] md:min-w-0 flex-1 md:flex-none ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium text-sm ${
                 activeTab === item.id 
                   ? 'bg-blue-600 text-white shadow-md' 
                   : 'text-slate-400 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <item.icon size={20} className={`mb-1 md:mb-0 md:w-[18px] md:h-[18px] ${activeTab === item.id ? "text-white" : "text-slate-400"}`} />
-              <span className="leading-none">{item.label}</span>
+              <item.icon size={20} className={activeTab === item.id ? "text-white" : "text-slate-400"} />
+              <span>{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="p-2 md:p-4 border-t border-slate-800 hidden md:block">
+        <div className="p-4 border-t border-slate-800">
           <button
             onClick={handleLogout}
-            className="flex w-full flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-lg transition-all font-medium text-[11px] md:text-sm text-red-400 hover:bg-slate-800 hover:text-red-300"
+            className="flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium text-sm text-red-400 hover:bg-slate-800 hover:text-red-300"
           >
-            <LogOut size={20} className="mb-1 md:mb-0 md:w-[18px] md:h-[18px]" />
-            <span className="leading-none">Logout</span>
+            <LogOut size={20} />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex overflow-x-auto scrollbar-hide shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 pb-safe">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center justify-center gap-1 min-w-[76px] flex-1 py-3 px-1 transition-colors ${
+              activeTab === item.id 
+                ? 'text-blue-600' 
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <item.icon size={20} className={activeTab === item.id ? "text-blue-600" : "text-slate-500"} />
+            <span className="text-[10px] font-medium leading-none whitespace-nowrap">{item.label}</span>
+          </button>
+        ))}
+      </nav>
+
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto space-y-6 pb-20 md:pb-0">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+        <div className="max-w-6xl mx-auto space-y-6">
           
-          <header className="mb-4 md:mb-8 hidden md:block flex justify-between items-center">
+          <header className="mb-4 md:mb-8 hidden md:flex justify-between items-center">
             <div>
               <h2 className="text-xl md:text-2xl font-bold text-slate-800">
                 {navItems.find(n => n.id === activeTab)?.label}
               </h2>
-              <p className="text-slate-500 text-xs md:text-sm mt-1">
+              <p className="text-slate-500 text-sm mt-1">
                 Manage your business data efficiently.
               </p>
             </div>

@@ -149,10 +149,10 @@ export default function ReceivedPayments({ receivedPayments, onUpdate }: Receive
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 text-gray-500 text-sm">
-                    <th className="p-4 font-medium">Date</th>
-                    <th className="p-4 font-medium">Platform</th>
-                    <th className="p-4 font-medium text-right">Amount</th>
-                    <th className="p-4 font-medium text-center">Actions</th>
+                    <th className="p-4 font-medium whitespace-nowrap">Date</th>
+                    <th className="p-4 font-medium whitespace-nowrap">Platform</th>
+                    <th className="p-4 font-medium text-right whitespace-nowrap">Amount</th>
+                    <th className="p-4 font-medium text-center whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm">
@@ -165,14 +165,14 @@ export default function ReceivedPayments({ receivedPayments, onUpdate }: Receive
                   ) : (
                     receivedPayments.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50">
-                        <td className="p-4">{p.date}</td>
-                        <td className="p-4 font-medium">
+                        <td className="p-4 whitespace-nowrap">{p.date}</td>
+                        <td className="p-4 font-medium whitespace-nowrap">
                           <span className={`px-2 py-1 rounded text-xs ${p.platform === 'Meesho' ? 'bg-pink-100 text-pink-700' : p.platform === 'Flipkart' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
                             {p.platform}
                           </span>
                         </td>
-                        <td className="p-4 text-right font-medium text-green-600">₹{p.amount.toLocaleString()}</td>
-                        <td className="p-4 text-center">
+                        <td className="p-4 text-right font-medium text-green-600 whitespace-nowrap">₹{p.amount.toLocaleString()}</td>
+                        <td className="p-4 text-center whitespace-nowrap">
                           <button
                             onClick={() => handleDelete(p.id)}
                             disabled={deletingId === p.id}

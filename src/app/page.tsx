@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Dashboard from '@/components/Dashboard';
-import PurchaseForm from '@/components/PurchaseForm';
 import TransactionsList from '@/components/TransactionsList';
+import PurchasesTab from '@/components/PurchasesTab';
 import BuyersLedger from '@/components/BuyersLedger';
 import Analytics from '@/components/Analytics';
 import ReceivedPayments from '@/components/ReceivedPayments';
@@ -224,14 +224,7 @@ export default function Home() {
               </div>
               
               <div className={activeTab === 'purchases' ? 'block' : 'hidden'}>
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                  <div className="xl:col-span-1">
-                    <PurchaseForm buyers={buyers} onSuccess={fetchData} />
-                  </div>
-                  <div className="xl:col-span-2">
-                    <TransactionsList purchases={purchases} onUpdate={fetchData} />
-                  </div>
-                </div>
+                <PurchasesTab buyers={buyers} purchases={purchases} onUpdate={fetchData} />
               </div>
               
               <div className={activeTab === 'ledger' ? 'block' : 'hidden'}>

@@ -4,6 +4,23 @@ import { Expense } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  EmptyState,
+  Field,
+  Input,
+  Money,
+  Select,
+  StatCard,
+  TableWrap,
+} from '@/components/ui';
+import { formatINR } from '@/lib/format';
+import { Receipt } from 'lucide-react';
 
 type ExpensesProps = {
   expenses: Expense[];
@@ -21,9 +38,7 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
     amount: 0,
   });
 
-  const totalExpenses = useMemo(() => {
-    return expenses.reduce((sum, e) => sum + e.amount, 0);
-  }, [expenses]);
+  const totalExpenses = useMemo(() => expenses.reduce((sum, e) => sum + e.amount, 0), [expenses]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,8 +48,7 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
     try {
       const { error } = await supabase.from('expenses').insert([formData]);
       if (error) throw error;
-      
-      setFormData(prev => ({ ...prev, description: '', amount: 0 }));
+      setFormData((prev) => ({ ...prev, description: '', amount: 0 }));
       onUpdate();
     } catch (err) {
       console.error(err);
@@ -60,132 +74,137 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
   };
 
   return (
-    <div className="space-y-6">
-      
-      {/* Stats Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 border-l-4 border-l-orange-500 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Operating Expenses</h3>
-          <p className="text-3xl font-extrabold text-slate-800 tracking-tight">₹{totalExpenses.toLocaleString()}</p>
-        </div>
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatCard label="Total operating expenses" value={formatINR(totalExpenses)} icon={Receipt} tone="amber" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Form */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 p-6">
-            <h2 className="text-xl font-bold mb-6 text-slate-800">Record Expense</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Date</label>
-                <input 
-                  type="date" 
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Record expense</CardTitle>
+          </CardHeader>
+          <CardBody>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <Field label="Date" htmlFor="exp-date">
+                <Input
+                  id="exp-date"
+                  type="date"
                   required
                   value={formData.date}
-                  onChange={e => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Category</label>
-                <select 
+              </Field>
+              <Field label="Category" htmlFor="exp-category">
+                <Select
+                  id="exp-category"
                   required
                   value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
-                  <option value="Packaging">Packaging (Boxes, Polythene)</option>
-                  <option value="Shipping">Shipping / Courier</option>
+                  <option value="Packaging">Packaging (boxes, polythene)</option>
+                  <option value="Shipping">Shipping / courier</option>
                   <option value="Marketing">Marketing</option>
                   <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
-                <input 
-                  type="text" 
+                </Select>
+              </Field>
+              <Field label="Description" htmlFor="exp-desc">
+                <Input
+                  id="exp-desc"
+                  type="text"
                   required
-                  placeholder="e.g. 100x Corrugated Boxes"
+                  placeholder="e.g. 100 corrugated boxes"
                   value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Amount (₹)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">₹</span>
-                  <input 
-                    type="number" 
-                    min="0"
-                    step="0.01"
-                    required
-                    value={formData.amount || ''}
-                    onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })}
-                    className="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition-colors"
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={loading || formData.amount <= 0}
-                className="w-full mt-2 bg-indigo-600 text-white py-3 px-4 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none disabled:active:scale-100"
-              >
-                {loading ? 'Saving...' : 'Save Expense'}
-              </button>
+              </Field>
+              <Field label="Amount (₹)" htmlFor="exp-amount">
+                <Input
+                  id="exp-amount"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  inputMode="decimal"
+                  required
+                  value={formData.amount || ''}
+                  onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
+                />
+              </Field>
+              <Button type="submit" disabled={loading || formData.amount <= 0} className="w-full">
+                {loading ? 'Saving…' : 'Save expense'}
+              </Button>
             </form>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
 
-        {/* List */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 overflow-hidden">
-            <div className="p-6 border-b border-slate-100">
-              <h2 className="text-xl font-bold text-slate-800">Expense History</h2>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
-                    <th className="p-4 font-semibold whitespace-nowrap">Date</th>
-                    <th className="p-4 font-semibold whitespace-nowrap">Category</th>
-                    <th className="p-4 font-semibold whitespace-nowrap">Description</th>
-                    <th className="p-4 font-semibold text-right whitespace-nowrap">Amount</th>
-                    <th className="p-4 font-semibold text-center whitespace-nowrap">Actions</th>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Expense history</CardTitle>
+          </CardHeader>
+          <div className="md:hidden divide-y divide-border">
+            {expenses.length === 0 ? (
+              <EmptyState title="No expenses yet" description="Record packaging, shipping, or other costs." />
+            ) : (
+              expenses.map((e) => (
+                <div key={e.id} className="flex flex-col gap-2 px-4 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Badge tone={e.category === 'Packaging' ? 'amber' : 'slate'}>{e.category}</Badge>
+                      <p className="mt-2 text-sm text-foreground">{e.description}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{e.date}</p>
+                    </div>
+                    <Money value={e.amount} className="shrink-0 text-sm font-semibold text-red-600" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(e.id)}
+                    disabled={deletingId === e.id}
+                    className="self-start text-xs font-semibold text-destructive disabled:opacity-50"
+                  >
+                    {deletingId === e.id ? 'Deleting…' : 'Delete'}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="hidden md:block">
+            <TableWrap>
+              <table className="w-full text-left text-sm">
+                <thead className="bg-muted/70 text-muted-foreground">
+                  <tr>
+                    <th className="px-5 py-3 font-semibold">Date</th>
+                    <th className="px-5 py-3 font-semibold">Category</th>
+                    <th className="px-5 py-3 font-semibold">Description</th>
+                    <th className="px-5 py-3 text-right font-semibold">Amount</th>
+                    <th className="px-5 py-3 text-center font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
+                <tbody className="divide-y divide-border">
                   {expenses.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-slate-400 font-medium">
-                        No expenses recorded yet.
+                      <td colSpan={5}>
+                        <EmptyState title="No expenses yet" />
                       </td>
                     </tr>
                   ) : (
-                    expenses.map(e => (
-                      <tr key={e.id} className="hover:bg-indigo-50/50 transition-colors group">
-                        <td className="p-4 whitespace-nowrap text-slate-500 font-medium">{e.date}</td>
-                        <td className="p-4 font-medium whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${e.category === 'Packaging' ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-                            {e.category}
-                          </span>
+                    expenses.map((e) => (
+                      <tr key={e.id} className="hover:bg-muted/50">
+                        <td className="whitespace-nowrap px-5 py-3 text-muted-foreground">{e.date}</td>
+                        <td className="px-5 py-3">
+                          <Badge tone={e.category === 'Packaging' ? 'amber' : 'slate'}>{e.category}</Badge>
                         </td>
-                        <td className="p-4 text-slate-600 whitespace-nowrap">{e.description}</td>
-                        <td className="p-4 text-right font-bold text-red-500 whitespace-nowrap">₹{e.amount.toLocaleString()}</td>
-                        <td className="p-4 text-center whitespace-nowrap">
+                        <td className="max-w-xs truncate px-5 py-3">{e.description}</td>
+                        <td className="px-5 py-3 text-right font-semibold text-red-600">
+                          <Money value={e.amount} />
+                        </td>
+                        <td className="px-5 py-3 text-center">
                           <button
+                            type="button"
                             onClick={() => handleDelete(e.id)}
                             disabled={deletingId === e.id}
-                            className="text-red-500 hover:text-red-700 disabled:opacity-50 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                            className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
                           >
-                            {deletingId === e.id ? 'Deleting...' : 'Delete'}
+                            {deletingId === e.id ? 'Deleting…' : 'Delete'}
                           </button>
                         </td>
                       </tr>
@@ -193,9 +212,9 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableWrap>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

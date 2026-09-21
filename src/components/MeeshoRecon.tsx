@@ -2,7 +2,23 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/lib/supabase';
-import { Calculator, CheckCircle2, AlertCircle, FileUp, Save } from 'lucide-react';
+import { Calculator, CheckCircle2, AlertCircle, FileUp, Banknote, Clock3, RotateCcw } from 'lucide-react';
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Field,
+  Input,
+  Money,
+  Select,
+  StatCard,
+  TableWrap,
+} from '@/components/ui';
+import { formatINR } from '@/lib/format';
 
 type OrderRow = {
   subOrderNo: string;
@@ -298,254 +314,256 @@ export default function MeeshoRecon() {
   });
 
   return (
-    <div className="space-y-6">
-      
-      {/* Header */}
-      <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Meesho Recon</h2>
-          <p className="text-slate-500 text-sm">Automated match & profit calculation</p>
-        </div>
-        <div className="flex items-center gap-3 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-          <span className="text-sm font-semibold text-indigo-800">Global Packing Cost (₹):</span>
-          <input 
-            type="number"
-            min="0"
-            value={globalPackingCost}
-            onChange={(e) => handleSaveGlobalPacking(Number(e.target.value))}
-            className="w-20 p-1.5 border border-indigo-200 rounded-lg text-center font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          />
-        </div>
+    <div className="flex flex-col gap-5">
+      <Card>
+        <CardHeader className="gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle>Meesho reconciliation</CardTitle>
+            <CardDescription>Match order sheets with settlements and calculate profit.</CardDescription>
+          </div>
+          <Field label="Global packing cost (₹)" htmlFor="packing-cost">
+            <Input
+              id="packing-cost"
+              type="number"
+              min={0}
+              inputMode="decimal"
+              value={globalPackingCost}
+              onChange={(e) => handleSaveGlobalPacking(Number(e.target.value))}
+              className="sm:w-32"
+            />
+          </Field>
+        </CardHeader>
+      </Card>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>1. Order sheet</CardTitle>
+            <CardDescription>Upload the sheet with Sub Order No, SKU, and status.</CardDescription>
+          </CardHeader>
+          <CardBody>
+            <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/50 px-4 py-6 text-center hover:border-primary hover:bg-muted">
+              <FileUp className="size-5 text-muted-foreground" aria-hidden />
+              <span className="text-sm font-semibold text-primary">Select order sheet</span>
+              <input type="file" className="sr-only" accept=".xlsx,.xls,.csv" onChange={handleOrderFileUpload} />
+            </label>
+            {orders.length > 0 ? (
+              <p className="mt-3 flex items-center gap-2 text-sm font-medium text-emerald-700">
+                <CheckCircle2 className="size-4" aria-hidden />
+                {orders.length} orders loaded
+              </p>
+            ) : null}
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>2. Payment sheets</CardTitle>
+            <CardDescription>Upload one or more settlement files to match payments.</CardDescription>
+          </CardHeader>
+          <CardBody>
+            <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/50 px-4 py-6 text-center hover:border-primary hover:bg-muted">
+              <FileUp className="size-5 text-muted-foreground" aria-hidden />
+              <span className="text-sm font-semibold text-primary">Select payment sheets</span>
+              <input type="file" className="sr-only" multiple accept=".xlsx,.xls,.csv" onChange={handlePaymentFileUpload} />
+            </label>
+            {payments.length > 0 ? (
+              <p className="mt-3 flex items-center gap-2 text-sm font-medium text-emerald-700">
+                <CheckCircle2 className="size-4" aria-hidden />
+                {payments.length} payment records loaded
+              </p>
+            ) : null}
+          </CardBody>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 hover:border-indigo-200 transition-colors group">
-          <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-            <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg"><FileUp size={16} /></div>
-            1. Upload Order Sheets
-          </h3>
-          <p className="text-sm text-slate-500 mb-4">Upload the primary order sheets containing Sub Order No, SKU, and Status.</p>
-          <label className="flex items-center justify-center w-full p-6 border-2 border-dashed border-indigo-200 bg-indigo-50/50 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 transition-all group-hover:shadow-inner">
-            <div className="flex flex-col items-center gap-2">
-              <FileUp size={24} className="text-indigo-400" />
-              <span className="text-sm font-medium text-indigo-600">Select Order Sheet</span>
-            </div>
-            <input type="file" className="hidden" accept=".xlsx,.xls,.csv" onChange={handleOrderFileUpload} />
-          </label>
-          {orders.length > 0 && (
-            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2 text-emerald-700 text-sm font-medium">
-              <CheckCircle2 size={16} />
-              {orders.length} orders loaded
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 hover:border-indigo-200 transition-colors group">
-          <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-            <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg"><FileUp size={16} /></div>
-            2. Upload Payment Sheets
-          </h3>
-          <p className="text-sm text-slate-500 mb-4">Upload one or multiple payment sheets to match settlements.</p>
-          <label className="flex items-center justify-center w-full p-6 border-2 border-dashed border-indigo-200 bg-indigo-50/50 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 transition-all group-hover:shadow-inner">
-            <div className="flex flex-col items-center gap-2">
-              <FileUp size={24} className="text-indigo-400" />
-              <span className="text-sm font-medium text-indigo-600">Select Payment Sheets</span>
-            </div>
-            <input type="file" className="hidden" multiple accept=".xlsx,.xls,.csv" onChange={handlePaymentFileUpload} />
-          </label>
-          {payments.length > 0 && (
-            <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2 text-emerald-700 text-sm font-medium">
-              <CheckCircle2 size={16} />
-              {payments.length} payment records loaded
-            </div>
-          )}
-        </div>
+      <div className="flex justify-stretch sm:justify-end">
+        <Button onClick={handleCalculate} disabled={orders.length === 0 || loading} className="w-full sm:w-auto">
+          <Calculator className="size-4" aria-hidden />
+          {loading ? 'Processing…' : 'Run reconciliation'}
+        </Button>
       </div>
 
-      <div className="flex justify-end">
-        <button 
-          onClick={handleCalculate}
-          disabled={orders.length === 0 || loading}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 active:scale-95"
-        >
-          <Calculator size={20} />
-          {loading ? 'Processing...' : 'Run Reconciliation'}
-        </button>
-      </div>
-
-      {/* Missing SKUs Modal */}
-      {missingSkus.length > 0 && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <div className="flex items-center gap-3 text-orange-600 mb-2">
-                <AlertCircle size={24} />
-                <h3 className="text-xl font-bold text-slate-800">New SKUs Detected</h3>
+      {missingSkus.length > 0 ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 sm:items-center sm:p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sku-dialog-title"
+            className="flex max-h-[90dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl bg-card shadow-2xl sm:rounded-2xl"
+          >
+            <div className="border-b border-border px-4 py-4 sm:px-5">
+              <div className="flex items-center gap-2 text-amber-700">
+                <AlertCircle className="size-5" aria-hidden />
+                <h3 id="sku-dialog-title" className="text-lg font-semibold text-foreground">
+                  New SKUs detected
+                </h3>
               </div>
-              <p className="text-slate-500 text-sm">We found SKUs in your order sheet that are not in your database. Please enter their actual product cost to continue. They will be saved permanently.</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Enter product cost for these SKUs. They will be saved for future reconciliations.
+              </p>
             </div>
-            
-            <div className="p-6 overflow-y-auto bg-white flex-1 space-y-4">
-              {missingSkus.map(sku => (
-                <div key={sku} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 hover:border-indigo-300 transition-colors">
-                  <span className="font-mono text-sm font-semibold text-slate-700">{sku}</span>
-                  <div className="relative w-32">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">₹</span>
-                    <input
-                      type="number"
-                      value={newSkuCosts[sku] === 0 ? '' : newSkuCosts[sku]}
-                      onChange={(e) => setNewSkuCosts({...newSkuCosts, [sku]: Number(e.target.value)})}
-                      className="w-full pl-7 pr-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                      placeholder="Cost"
-                    />
-                  </div>
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 sm:p-5">
+              {missingSkus.map((sku) => (
+                <div key={sku} className="flex flex-col gap-2 rounded-xl border border-border bg-muted/50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="font-mono text-sm font-semibold">{sku}</span>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={newSkuCosts[sku] === 0 ? '' : newSkuCosts[sku]}
+                    onChange={(e) => setNewSkuCosts({ ...newSkuCosts, [sku]: Number(e.target.value) })}
+                    placeholder="Cost"
+                    aria-label={`Cost for ${sku}`}
+                    className="sm:w-32"
+                  />
                 </div>
               ))}
             </div>
-
-            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-              <button 
-                onClick={() => setMissingSkus([])}
-                className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
-              >
+            <div className="flex flex-col-reverse gap-2 border-t border-border p-4 sm:flex-row sm:justify-end sm:p-5">
+              <Button type="button" variant="secondary" onClick={() => setMissingSkus([])}>
                 Cancel
-              </button>
-              <button 
-                onClick={handleSaveNewSkus}
-                className="px-6 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-600/20"
-              >
-                Save & Continue
-              </button>
+              </Button>
+              <Button type="button" onClick={handleSaveNewSkus}>
+                Save and continue
+              </Button>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {isCalculated && results.length > 0 && (
-        <div className="space-y-6 animate-in slide-in-from-bottom-8 duration-500">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/50 rounded-bl-full -mr-4 -mt-4"></div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Settled</p>
-              <p className="text-3xl font-extrabold text-emerald-600 tracking-tight">₹{totalSettled.toLocaleString()}</p>
-              <p className="text-xs font-medium text-slate-400 mt-2">Amount successfully received</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-100/50 rounded-bl-full -mr-4 -mt-4"></div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Pending Payments</p>
-              <p className="text-3xl font-extrabold text-orange-600 tracking-tight">₹{pendingAmount.toLocaleString()}</p>
-              <p className="text-xs font-medium text-slate-400 mt-2">Orders delivered but not paid yet</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-red-100/50 rounded-bl-full -mr-4 -mt-4"></div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Returns & Cancellations</p>
-              <p className="text-3xl font-extrabold text-slate-800 tracking-tight">{returnedCount}</p>
-              <p className="text-xs font-medium text-slate-400 mt-2">RTO or Cancelled orders</p>
-            </div>
+      {isCalculated && results.length > 0 ? (
+        <div className="flex flex-col gap-5">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatCard label="Total settled" value={formatINR(totalSettled)} icon={Banknote} tone="green" hint="Amount received" />
+            <StatCard label="Pending payments" value={formatINR(pendingAmount)} icon={Clock3} tone="amber" hint="Delivered, not paid" />
+            <StatCard label="Returns & cancellations" value={String(returnedCount)} icon={RotateCcw} tone="red" hint="RTO or cancelled orders" />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200/60 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+          <Card>
+            <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="font-semibold text-slate-800">Sub Order Details</h3>
-                <p className="text-xs text-slate-500">Showing {filteredResults.length} orders.</p>
+                <CardTitle>Sub order details</CardTitle>
+                <CardDescription>Showing {filteredResults.length} orders</CardDescription>
               </div>
-              <select 
+              <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-sm border border-slate-200 rounded-xl p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                aria-label="Filter by status"
+                className="sm:w-56"
               >
-                <option value="ALL">All Statuses ({results.length})</option>
-                {uniqueStatuses.map(status => {
-                  const count = results.filter(r => r.status === status).length;
+                <option value="ALL">All statuses ({results.length})</option>
+                {uniqueStatuses.map((status) => {
+                  const count = results.filter((r) => r.status === status).length;
                   return (
-                    <option key={status} value={status}>{status} ({count})</option>
+                    <option key={status} value={status}>
+                      {status} ({count})
+                    </option>
                   );
                 })}
-              </select>
-            </div>
-            <div className="overflow-x-auto max-h-[600px]">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead className="sticky top-0 bg-slate-100/80 backdrop-blur-md shadow-sm z-10">
-                  <tr className="text-slate-600">
-                    <th className="p-4 font-semibold whitespace-nowrap border-b border-slate-200 text-center">Sr. No.</th>
-                    <th className="p-4 font-semibold whitespace-nowrap border-b border-slate-200">Sub Order No</th>
-                    <th className="p-4 font-semibold whitespace-nowrap border-b border-slate-200">SKU</th>
-                    <th className="p-4 font-semibold whitespace-nowrap text-center border-b border-slate-200">Qty</th>
-                    <th className="p-4 font-semibold whitespace-nowrap text-right border-b border-slate-200">Payment</th>
-                    <th className="p-4 font-semibold whitespace-nowrap border-b border-slate-200">Status</th>
-                    <th className="p-4 font-semibold whitespace-nowrap text-right border-b border-slate-200">Product Cost</th>
-                    <th className="p-4 font-semibold whitespace-nowrap text-right border-b border-slate-200">Final Cost</th>
-                    <th className="p-4 font-semibold whitespace-nowrap text-right border-b border-slate-200">Packing</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredResults.map((r, i) => {
-                    const prodCost = dbSkuCosts[r.sku] || 0;
-                    const isReturnOrCancel = ['CANCELLED', 'RTO_COMPLETE', 'RTO_LOCKED', 'RTO'].includes(r.status);
-                    const finalCost = isReturnOrCancel ? 0 : r.qty * prodCost;
-                    const finalPacking = r.status === 'CANCELLED' ? 0 : globalPackingCost; 
-
-                    return (
-                      <tr key={i} className="hover:bg-indigo-50/50 transition-colors bg-white group">
-                        <td className="p-4 whitespace-nowrap text-center text-slate-400 font-mono text-xs">{i + 1}</td>
-                        <td className="p-4 whitespace-nowrap font-medium text-slate-700">{r.subOrderNo}</td>
-                        <td className="p-4 whitespace-nowrap text-slate-500 text-xs font-mono">{r.sku}</td>
-                        <td className="p-4 whitespace-nowrap text-center font-medium text-slate-600">{r.qty}</td>
-                        <td className="p-4 whitespace-nowrap text-right text-emerald-600 font-bold">
-                          ₹{r.settledAmount.toLocaleString()}
-                        </td>
-                        <td className="p-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                            r.status === 'DELIVERED' ? 'bg-emerald-100/80 text-emerald-700 border border-emerald-200' : 
-                            isReturnOrCancel ? 'bg-red-100/80 text-red-700 border border-red-200' : 'bg-slate-100/80 text-slate-700 border border-slate-200'
-                          }`}>
-                            {r.status || 'UNKNOWN'}
-                          </span>
-                        </td>
-                        <td className="p-4 whitespace-nowrap text-right text-slate-600 font-medium">₹{prodCost}</td>
-                        <td className="p-4 whitespace-nowrap text-right text-red-500 font-bold">₹{finalCost}</td>
-                        <td className="p-4 whitespace-nowrap text-right text-orange-500 font-medium">₹{finalPacking}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot className="sticky bottom-0 bg-slate-900 text-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.2)] z-10">
-                  {(() => {
-                    const totals = filteredResults.reduce((acc, r) => {
+              </Select>
+            </CardHeader>
+            <TableWrap>
+              <div className="max-h-[600px] overflow-auto">
+                <table className="w-full min-w-[860px] text-left text-sm">
+                  <thead className="sticky top-0 bg-muted z-10 text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3 text-center font-semibold">#</th>
+                      <th className="px-4 py-3 font-semibold">Sub order</th>
+                      <th className="px-4 py-3 font-semibold">SKU</th>
+                      <th className="px-4 py-3 text-center font-semibold">Qty</th>
+                      <th className="px-4 py-3 text-right font-semibold">Payment</th>
+                      <th className="px-4 py-3 font-semibold">Status</th>
+                      <th className="px-4 py-3 text-right font-semibold">Product</th>
+                      <th className="px-4 py-3 text-right font-semibold">Final cost</th>
+                      <th className="px-4 py-3 text-right font-semibold">Packing</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredResults.map((r, i) => {
                       const prodCost = dbSkuCosts[r.sku] || 0;
                       const isReturnOrCancel = ['CANCELLED', 'RTO_COMPLETE', 'RTO_LOCKED', 'RTO'].includes(r.status);
                       const finalCost = isReturnOrCancel ? 0 : r.qty * prodCost;
                       const finalPacking = r.status === 'CANCELLED' ? 0 : globalPackingCost;
-                      
-                      acc.qty += r.qty;
-                      acc.received += r.settledAmount;
-                      acc.productCost += prodCost;
-                      acc.finalCost += finalCost;
-                      acc.packing += finalPacking;
-                      return acc;
-                    }, { qty: 0, received: 0, productCost: 0, finalCost: 0, packing: 0 });
 
-                    const totalProfit = totals.received - totals.finalCost - totals.packing;
-
-                    return (
-                      <tr>
-                        <td colSpan={3} className="p-4 font-bold text-right text-slate-300">TOTALS:</td>
-                        <td className="p-4 font-bold text-center text-slate-100">{totals.qty}</td>
-                        <td className="p-4 font-bold text-right text-emerald-400">₹{totals.received.toLocaleString()}</td>
-                        <td className="p-4 text-center text-xs text-slate-400 font-medium">Profit: <span className={`font-bold text-sm ml-1 ${totalProfit >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>₹{totalProfit.toLocaleString()}</span></td>
-                        <td className="p-4 font-bold text-right text-slate-300">₹{totals.productCost.toLocaleString()}</td>
-                        <td className="p-4 font-bold text-right text-red-400">₹{totals.finalCost.toLocaleString()}</td>
-                        <td className="p-4 font-bold text-right text-orange-400">₹{totals.packing.toLocaleString()}</td>
-                      </tr>
-                    );
-                  })()}
-                </tfoot>
-              </table>
-            </div>
-          </div>
+                      return (
+                        <tr key={`${r.subOrderNo}-${i}`} className="hover:bg-muted/50">
+                          <td className="px-4 py-3 text-center font-mono text-xs text-muted-foreground">{i + 1}</td>
+                          <td className="px-4 py-3 font-medium">{r.subOrderNo}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{r.sku}</td>
+                          <td className="px-4 py-3 text-center tabular-nums">{r.qty}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-emerald-700">
+                            <Money value={r.settledAmount} />
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge tone={r.status === 'DELIVERED' ? 'green' : isReturnOrCancel ? 'red' : 'slate'}>
+                              {r.status || 'UNKNOWN'}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Money value={prodCost} />
+                          </td>
+                          <td className="px-4 py-3 text-right font-semibold text-red-600">
+                            <Money value={finalCost} />
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Money value={finalPacking} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot className="sticky bottom-0 bg-sidebar text-white">
+                    {(() => {
+                      const totals = filteredResults.reduce(
+                        (acc, r) => {
+                          const prodCost = dbSkuCosts[r.sku] || 0;
+                          const isReturnOrCancel = ['CANCELLED', 'RTO_COMPLETE', 'RTO_LOCKED', 'RTO'].includes(r.status);
+                          const finalCost = isReturnOrCancel ? 0 : r.qty * prodCost;
+                          const finalPacking = r.status === 'CANCELLED' ? 0 : globalPackingCost;
+                          acc.qty += r.qty;
+                          acc.received += r.settledAmount;
+                          acc.productCost += prodCost;
+                          acc.finalCost += finalCost;
+                          acc.packing += finalPacking;
+                          return acc;
+                        },
+                        { qty: 0, received: 0, productCost: 0, finalCost: 0, packing: 0 }
+                      );
+                      const totalProfit = totals.received - totals.finalCost - totals.packing;
+                      return (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-3 text-right text-slate-300">
+                            Totals
+                          </td>
+                          <td className="px-4 py-3 text-center">{totals.qty}</td>
+                          <td className="px-4 py-3 text-right text-emerald-300">
+                            <Money value={totals.received} />
+                          </td>
+                          <td className="px-4 py-3 text-center text-xs">
+                            Profit{' '}
+                            <span className={totalProfit >= 0 ? 'font-semibold text-emerald-300' : 'font-semibold text-red-300'}>
+                              {formatINR(totalProfit)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right text-slate-300">
+                            <Money value={totals.productCost} />
+                          </td>
+                          <td className="px-4 py-3 text-right text-red-300">
+                            <Money value={totals.finalCost} />
+                          </td>
+                          <td className="px-4 py-3 text-right text-amber-300">
+                            <Money value={totals.packing} />
+                          </td>
+                        </tr>
+                      );
+                    })()}
+                  </tfoot>
+                </table>
+              </div>
+            </TableWrap>
+          </Card>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

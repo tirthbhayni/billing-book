@@ -25,7 +25,7 @@ export type ReceivedPayment = {
   id: string;
   created_at: string;
   date: string;
-  platform: string; // Meesho, Flipkart, etc.
+  platform: string; // Meesho, Flipkart, Amazon, Other
   amount: number;
 };
 

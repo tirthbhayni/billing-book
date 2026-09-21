@@ -12,8 +12,35 @@ import Auth from '@/components/Auth';
 import MeeshoRecon from '@/components/MeeshoRecon';
 import { supabase } from '@/lib/supabase';
 import { Purchase, Payment, Buyer, ReceivedPayment, Expense } from '@/types';
-import { LayoutDashboard, ShoppingBag, Users, PieChart, Gem, HandCoins, Receipt, LogOut, Calculator } from 'lucide-react';
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Users,
+  PieChart,
+  Gem,
+  HandCoins,
+  Receipt,
+  LogOut,
+  Calculator,
+  MoreHorizontal,
+  X,
+} from 'lucide-react';
 import { Session } from '@supabase/supabase-js';
+import { cn } from '@/lib/cn';
+
+type TabId = 'dashboard' | 'purchases' | 'ledger' | 'analytics' | 'sales' | 'expenses' | 'meesho_recon';
+
+const navItems: { id: TabId; label: string; short: string; icon: typeof LayoutDashboard; description: string }[] = [
+  { id: 'dashboard', label: 'Overview', short: 'Home', icon: LayoutDashboard, description: 'Balances and recent activity' },
+  { id: 'purchases', label: 'Purchases', short: 'Buy', icon: ShoppingBag, description: 'Bills, items, and suppliers' },
+  { id: 'ledger', label: 'Buyers', short: 'Buyers', icon: Users, description: 'Accounts and supplier payments' },
+  { id: 'sales', label: 'Received', short: 'Received', icon: HandCoins, description: 'Meesho, Flipkart, Amazon and other receipts' },
+  { id: 'expenses', label: 'Expenses', short: 'Costs', icon: Receipt, description: 'Operating costs' },
+  { id: 'meesho_recon', label: 'Meesho Recon', short: 'Recon', icon: Calculator, description: 'Order and settlement matching' },
+  { id: 'analytics', label: 'Analytics', short: 'Stats', icon: PieChart, description: 'Purchase trends and share' },
+];
+
+const primaryNav = ['dashboard', 'purchases', 'ledger', 'sales'] as const;
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
@@ -24,7 +51,8 @@ export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'purchases' | 'ledger' | 'analytics' | 'sales' | 'expenses' | 'meesho_recon'>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -49,7 +77,7 @@ export default function Home() {
         supabase.from('payments').select('*').order('date', { ascending: false }),
         supabase.from('buyers').select('*').order('name', { ascending: true }),
         supabase.from('received_payments').select('*').order('date', { ascending: false }),
-        supabase.from('expenses').select('*').order('date', { ascending: false })
+        supabase.from('expenses').select('*').order('date', { ascending: false }),
       ]);
 
       if (purchasesRes.error) console.error('Error fetching purchases:', purchasesRes.error);
@@ -60,13 +88,12 @@ export default function Home() {
 
       if (buyersRes.error) console.error('Error fetching buyers:', buyersRes.error);
       else setBuyers(buyersRes.data || []);
-      
+
       if (receivedRes.error) console.error('Error fetching received payments:', receivedRes.error);
       else setReceivedPayments(receivedRes.data || []);
 
       if (expensesRes.error) console.error('Error fetching expenses:', expensesRes.error);
       else setExpenses(expensesRes.data || []);
-      
     } catch (err) {
       console.error(err);
     } finally {
@@ -89,167 +116,229 @@ export default function Home() {
     return <Auth />;
   }
 
-  const navItems = [
-    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
-    { id: 'purchases', label: 'Purchases', icon: ShoppingBag },
-    { id: 'ledger', label: 'Buyers & Payments', icon: Users },
-    { id: 'sales', label: 'Received (Sales)', icon: HandCoins },
-    { id: 'expenses', label: 'Expenses', icon: Receipt },
-    { id: 'meesho_recon', label: 'Meesho Recon', icon: Calculator },
-    { id: 'analytics', label: 'Analytics', icon: PieChart },
-  ] as const;
+  const current = navItems.find((n) => n.id === activeTab);
+  const moreActive = !primaryNav.includes(activeTab as (typeof primaryNav)[number]);
+
+  const selectTab = (id: TabId) => {
+    setActiveTab(id);
+    setMoreOpen(false);
+  };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-slate-50/50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
-      
-      {/* Mobile Top Header */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-neutral-950 sticky top-0 z-30 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg text-white shadow-sm">
-            <Gem size={20} />
+    <div className="flex min-h-dvh bg-background text-foreground">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-white/5 bg-sidebar text-slate-300 lg:flex">
+        <div className="flex items-center gap-3 border-b border-white/8 px-5 py-5">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-white/10 text-white">
+            <Gem className="size-5" aria-hidden />
           </div>
-          <h1 className="text-lg font-bold text-white tracking-tight">BillingBook</h1>
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold tracking-tight text-white">Billing Book</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-blue-300">Jewellery retail</p>
+          </div>
         </div>
-        <button
-          onClick={handleLogout}
-          className="p-2 text-slate-400 hover:text-red-400 transition-colors"
-          aria-label="Logout"
-        >
-          <LogOut size={20} />
-        </button>
-      </div>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 bg-neutral-950 text-slate-300 min-h-screen flex-col shadow-2xl flex-shrink-0 z-20 sticky top-0 border-r border-neutral-800">
-        <div className="p-6 flex items-center gap-4 bg-neutral-950/50 border-b border-neutral-800/60 backdrop-blur-md">
-          <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-500/20">
-            <Gem size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">BillingBook</h1>
-            <p className="text-[11px] text-indigo-400 uppercase tracking-widest font-bold mt-0.5">Jewellery Retail</p>
-          </div>
-        </div>
-        
-        <nav className="p-5 flex flex-col gap-1.5 flex-1 overflow-y-auto scrollbar-hide">
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 px-2">Menu</p>
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-sm group relative ${
-                activeTab === item.id 
-                  ? 'bg-indigo-600/10 text-indigo-400' 
-                  : 'text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200'
-              }`}
-            >
-              {activeTab === item.id && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-500 rounded-r-full" />
-              )}
-              <item.icon size={20} className={`transition-colors ${activeTab === item.id ? "text-indigo-400" : "text-neutral-500 group-hover:text-neutral-400"}`} />
-              <span className="tracking-wide">{item.label}</span>
-            </button>
-          ))}
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Primary">
+          {navItems.map((item) => {
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => selectTab(item.id)}
+                className={cn(
+                  'flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-200',
+                  active ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
+                )}
+                aria-current={active ? 'page' : undefined}
+              >
+                <item.icon className="size-4 shrink-0" aria-hidden />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
-        <div className="p-5 border-t border-neutral-800/60 bg-neutral-950">
+        <div className="border-t border-white/8 p-3">
+          <p className="truncate px-3 pb-2 text-xs text-slate-500">{session.user.email}</p>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium text-sm text-neutral-400 hover:bg-red-500/10 hover:text-red-400 group"
+            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-400 transition-colors duration-200 hover:bg-red-500/10 hover:text-red-300"
           >
-            <LogOut size={20} className="text-neutral-500 group-hover:text-red-400 transition-colors" />
-            <span className="tracking-wide">Logout</span>
+            <LogOut className="size-4" aria-hidden />
+            Sign out
           </button>
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200/60 flex overflow-x-auto scrollbar-hide shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-40 pb-safe">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`flex flex-col items-center justify-center gap-1.5 min-w-[76px] flex-1 py-3 px-1 transition-colors relative ${
-              activeTab === item.id 
-                ? 'text-indigo-600' 
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            {activeTab === item.id && (
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-b-full" />
-            )}
-            <item.icon size={20} className={activeTab === item.id ? "text-indigo-600" : "text-slate-400"} />
-            <span className="text-[10px] font-medium leading-none whitespace-nowrap">{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
-        <div className="max-w-6xl mx-auto space-y-6">
-          
-          <header className="mb-4 md:mb-8 hidden md:flex justify-between items-center">
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl md:text-2xl font-bold text-slate-800">
-                  {navItems.find(n => n.id === activeTab)?.label}
-                </h2>
-                {isSyncing && !initialLoading && (
-                  <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full animate-pulse border border-blue-100">Syncing...</span>
-                )}
-              </div>
-              <p className="text-slate-500 text-sm mt-1">
-                Manage your business data efficiently.
-              </p>
-            </div>
-          </header>
-
-          {initialLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-              <p>Loading application...</p>
-            </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-card/90 px-4 py-3 backdrop-blur-md lg:hidden">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">{current?.label}</p>
+            <p className="truncate text-xs text-muted-foreground">{current?.description}</p>
+          </div>
+          {isSyncing && !initialLoading ? (
+            <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">Syncing</span>
           ) : (
-            <div className="animate-in fade-in duration-300 slide-in-from-bottom-4 pb-20 md:pb-0">
-              <div className={activeTab === 'dashboard' ? 'block' : 'hidden'}>
-                <Dashboard 
-                  purchases={purchases} 
-                  payments={payments} 
-                  receivedPayments={receivedPayments} 
-                  expenses={expenses} 
-                />
-                <div className="mt-8">
-                  <TransactionsList purchases={purchases} onUpdate={fetchData} />
-                </div>
-              </div>
-              
-              <div className={activeTab === 'purchases' ? 'block' : 'hidden'}>
-                <PurchasesTab buyers={buyers} purchases={purchases} onUpdate={fetchData} />
-              </div>
-              
-              <div className={activeTab === 'ledger' ? 'block' : 'hidden'}>
-                <BuyersLedger buyers={buyers} purchases={purchases} payments={payments} onUpdate={fetchData} />
-              </div>
-
-              <div className={activeTab === 'sales' ? 'block' : 'hidden'}>
-                <ReceivedPayments receivedPayments={receivedPayments} onUpdate={fetchData} />
-              </div>
-              
-              <div className={activeTab === 'expenses' ? 'block' : 'hidden'}>
-                <Expenses expenses={expenses} onUpdate={fetchData} />
-              </div>
-
-              <div className={activeTab === 'analytics' ? 'block' : 'hidden'}>
-                <Analytics purchases={purchases} />
-              </div>
-
-              <div className={activeTab === 'meesho_recon' ? 'block' : 'hidden'}>
-                <MeeshoRecon />
-              </div>
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
+              <Gem className="size-4" aria-hidden />
             </div>
           )}
+        </header>
+
+        <main id="main-content" className="min-w-0 flex-1 overflow-y-auto px-4 py-4 pb-[calc(5.75rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:py-8 lg:pb-8">
+          <div className="mx-auto w-full max-w-6xl">
+            <header className="mb-6 hidden items-end justify-between gap-4 lg:flex">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">{current?.label}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{current?.description}</p>
+              </div>
+              {isSyncing && !initialLoading ? (
+                <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  Syncing latest data
+                </span>
+              ) : null}
+            </header>
+
+            {initialLoading ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true" aria-label="Loading dashboard">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-32 animate-pulse rounded-xl border border-border bg-card" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                <div className={activeTab === 'dashboard' ? 'flex flex-col gap-6' : 'hidden'}>
+                  <Dashboard
+                    purchases={purchases}
+                    payments={payments}
+                    receivedPayments={receivedPayments}
+                    expenses={expenses}
+                  />
+                  <TransactionsList purchases={purchases} onUpdate={fetchData} />
+                </div>
+
+                <div className={activeTab === 'purchases' ? 'block' : 'hidden'}>
+                  <PurchasesTab buyers={buyers} purchases={purchases} onUpdate={fetchData} />
+                </div>
+
+                <div className={activeTab === 'ledger' ? 'block' : 'hidden'}>
+                  <BuyersLedger buyers={buyers} purchases={purchases} payments={payments} onUpdate={fetchData} />
+                </div>
+
+                <div className={activeTab === 'sales' ? 'block' : 'hidden'}>
+                  <ReceivedPayments receivedPayments={receivedPayments} onUpdate={fetchData} />
+                </div>
+
+                <div className={activeTab === 'expenses' ? 'block' : 'hidden'}>
+                  <Expenses expenses={expenses} onUpdate={fetchData} />
+                </div>
+
+                <div className={activeTab === 'analytics' ? 'block' : 'hidden'}>
+                  <Analytics purchases={purchases} />
+                </div>
+
+                <div className={activeTab === 'meesho_recon' ? 'block' : 'hidden'}>
+                  <MeeshoRecon />
+                </div>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+        aria-label="Mobile"
+      >
+        <div className="grid grid-cols-5">
+          {navItems
+            .filter((item) => primaryNav.includes(item.id as (typeof primaryNav)[number]))
+            .map((item) => {
+              const active = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => selectTab(item.id)}
+                  className={cn(
+                    'flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium',
+                    active ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <item.icon className="size-5" aria-hidden />
+                  {item.short}
+                </button>
+              );
+            })}
+          <button
+            onClick={() => setMoreOpen(true)}
+            className={cn(
+              'flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium',
+              moreActive || moreOpen ? 'text-primary' : 'text-muted-foreground'
+            )}
+            aria-haspopup="dialog"
+            aria-expanded={moreOpen}
+          >
+            <MoreHorizontal className="size-5" aria-hidden />
+            More
+          </button>
         </div>
-      </main>
+      </nav>
+
+      {moreOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/40"
+            aria-label="Close menu"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="More pages"
+            className="absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-border bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold">More</p>
+              <button
+                type="button"
+                onClick={() => setMoreOpen(false)}
+                className="flex size-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
+                aria-label="Close"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-1">
+              {navItems
+                .filter((item) => !primaryNav.includes(item.id as (typeof primaryNav)[number]))
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => selectTab(item.id)}
+                    className={cn(
+                      'flex min-h-12 items-center gap-3 rounded-lg px-3 text-left text-sm font-medium',
+                      activeTab === item.id ? 'bg-muted text-primary' : 'text-foreground hover:bg-muted'
+                    )}
+                  >
+                    <item.icon className="size-4 text-muted-foreground" aria-hidden />
+                    <span>
+                      {item.label}
+                      <span className="mt-0.5 block text-xs font-normal text-muted-foreground">{item.description}</span>
+                    </span>
+                  </button>
+                ))}
+              <button
+                onClick={handleLogout}
+                className="mt-2 flex min-h-12 items-center gap-3 rounded-lg px-3 text-sm font-medium text-destructive hover:bg-red-50"
+              >
+                <LogOut className="size-4" aria-hidden />
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -11,13 +11,19 @@ import {
   CardBody,
   CardHeader,
   CardTitle,
+  DataTable,
   EmptyState,
   Field,
   Input,
   Money,
   Select,
   StatCard,
-  TableWrap,
+  TFoot,
+  THead,
+  Td,
+  Tf,
+  Th,
+  Tr,
 } from '@/components/ui';
 import { formatINR } from '@/lib/format';
 import { Receipt } from 'lucide-react';
@@ -139,81 +145,58 @@ export default function Expenses({ expenses, onUpdate }: ExpensesProps) {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Expense history</CardTitle>
+            <CardTitle>Expense register</CardTitle>
           </CardHeader>
-          <div className="md:hidden divide-y divide-border">
-            {expenses.length === 0 ? (
-              <EmptyState title="No expenses yet" description="Record packaging, shipping, or other costs." />
-            ) : (
-              expenses.map((e) => (
-                <div key={e.id} className="flex flex-col gap-2 px-4 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+          {expenses.length === 0 ? (
+            <EmptyState title="No expenses yet" description="Record packaging, shipping, or other costs." />
+          ) : (
+            <DataTable minWidth={680}>
+              <THead>
+                <tr>
+                  <Th align="center">Sr</Th>
+                  <Th>Date</Th>
+                  <Th>Category</Th>
+                  <Th>Description</Th>
+                  <Th align="right">Amount (₹)</Th>
+                  <Th align="center">Action</Th>
+                </tr>
+              </THead>
+              <tbody>
+                {expenses.map((e, idx) => (
+                  <Tr key={e.id}>
+                    <Td align="center">{idx + 1}</Td>
+                    <Td>{e.date}</Td>
+                    <Td>
                       <Badge tone={e.category === 'Packaging' ? 'amber' : 'slate'}>{e.category}</Badge>
-                      <p className="mt-2 text-sm text-foreground">{e.description}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{e.date}</p>
-                    </div>
-                    <Money value={e.amount} className="shrink-0 text-sm font-semibold text-red-600" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(e.id)}
-                    disabled={deletingId === e.id}
-                    className="self-start text-xs font-semibold text-destructive disabled:opacity-50"
-                  >
-                    {deletingId === e.id ? 'Deleting…' : 'Delete'}
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-          <div className="hidden md:block">
-            <TableWrap>
-              <table className="w-full text-left text-sm">
-                <thead className="bg-muted/70 text-muted-foreground">
-                  <tr>
-                    <th className="px-5 py-3 font-semibold">Date</th>
-                    <th className="px-5 py-3 font-semibold">Category</th>
-                    <th className="px-5 py-3 font-semibold">Description</th>
-                    <th className="px-5 py-3 text-right font-semibold">Amount</th>
-                    <th className="px-5 py-3 text-center font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {expenses.length === 0 ? (
-                    <tr>
-                      <td colSpan={5}>
-                        <EmptyState title="No expenses yet" />
-                      </td>
-                    </tr>
-                  ) : (
-                    expenses.map((e) => (
-                      <tr key={e.id} className="hover:bg-muted/50">
-                        <td className="whitespace-nowrap px-5 py-3 text-muted-foreground">{e.date}</td>
-                        <td className="px-5 py-3">
-                          <Badge tone={e.category === 'Packaging' ? 'amber' : 'slate'}>{e.category}</Badge>
-                        </td>
-                        <td className="max-w-xs truncate px-5 py-3">{e.description}</td>
-                        <td className="px-5 py-3 text-right font-semibold text-red-600">
-                          <Money value={e.amount} />
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(e.id)}
-                            disabled={deletingId === e.id}
-                            className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
-                          >
-                            {deletingId === e.id ? 'Deleting…' : 'Delete'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </TableWrap>
-          </div>
+                    </Td>
+                    <Td className="max-w-xs truncate">{e.description}</Td>
+                    <Td align="right" className="font-semibold text-red-600">
+                      <Money value={e.amount} />
+                    </Td>
+                    <Td align="center">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(e.id)}
+                        disabled={deletingId === e.id}
+                        className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingId === e.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </Td>
+                  </Tr>
+                ))}
+              </tbody>
+              <TFoot>
+                <tr>
+                  <Tf colSpan={4}>Total ({expenses.length} expenses)</Tf>
+                  <Tf align="right">
+                    <Money value={totalExpenses} className="text-white" />
+                  </Tf>
+                  <Tf />
+                </tr>
+              </TFoot>
+            </DataTable>
+          )}
         </Card>
       </div>
     </div>

@@ -189,6 +189,123 @@ export function TableWrap({ children }: { children: ReactNode }) {
   return <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">{children}</div>;
 }
 
+export function DataTable({ children, minWidth = 720 }: { children: ReactNode; minWidth?: number }) {
+  return (
+    <TableWrap>
+      <table className="w-full border-collapse text-sm" style={{ minWidth }}>
+        {children}
+      </table>
+    </TableWrap>
+  );
+}
+
+export function THead({ children }: { children: ReactNode }) {
+  return <thead className="bg-muted text-muted-foreground">{children}</thead>;
+}
+
+export function Th({
+  children,
+  align = 'left',
+  className,
+}: {
+  children?: ReactNode;
+  align?: 'left' | 'right' | 'center';
+  className?: string;
+}) {
+  return (
+    <th
+      className={cn(
+        'whitespace-nowrap border-b border-border px-3 py-2.5 text-xs font-semibold uppercase tracking-wide',
+        align === 'right' && 'text-right',
+        align === 'center' && 'text-center',
+        align === 'left' && 'text-left',
+        className
+      )}
+    >
+      {children}
+    </th>
+  );
+}
+
+export function Td({
+  children,
+  align = 'left',
+  className,
+  mono,
+}: {
+  children?: ReactNode;
+  align?: 'left' | 'right' | 'center';
+  className?: string;
+  mono?: boolean;
+}) {
+  return (
+    <td
+      className={cn(
+        'whitespace-nowrap border-b border-border px-3 py-2',
+        align === 'right' && 'text-right',
+        align === 'center' && 'text-center',
+        (mono || align === 'right') && 'font-mono tabular-nums',
+        className
+      )}
+    >
+      {children}
+    </td>
+  );
+}
+
+export function Tr({
+  children,
+  selected,
+  onClick,
+}: {
+  children: ReactNode;
+  selected?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <tr
+      onClick={onClick}
+      className={cn(
+        'odd:bg-white even:bg-slate-50/80 hover:bg-blue-50/70',
+        selected && 'bg-primary/10 hover:bg-primary/15',
+        onClick && 'cursor-pointer'
+      )}
+    >
+      {children}
+    </tr>
+  );
+}
+
+export function TFoot({ children }: { children: ReactNode }) {
+  return <tfoot className="bg-primary text-white">{children}</tfoot>;
+}
+
+export function Tf({
+  children,
+  align = 'left',
+  className,
+  colSpan,
+}: {
+  children?: ReactNode;
+  align?: 'left' | 'right' | 'center';
+  className?: string;
+  colSpan?: number;
+}) {
+  return (
+    <td
+      colSpan={colSpan}
+      className={cn(
+        'whitespace-nowrap px-3 py-2.5 text-sm font-semibold',
+        align === 'right' && 'text-right font-mono tabular-nums',
+        align === 'center' && 'text-center font-mono tabular-nums',
+        className
+      )}
+    >
+      {children}
+    </td>
+  );
+}
+
 export function FilterChip({
   active,
   children,

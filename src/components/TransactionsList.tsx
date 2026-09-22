@@ -8,18 +8,23 @@ import { Search, X } from 'lucide-react';
 import {
   Button,
   Card,
-  CardBody,
   CardDescription,
   CardHeader,
   CardTitle,
+  DataTable,
   EmptyState,
   FilterChip,
   Input,
   Money,
   Select,
-  TableWrap,
+  TFoot,
+  THead,
+  Td,
+  Tf,
+  Th,
+  Tr,
 } from '@/components/ui';
-import { formatINR, formatNumber } from '@/lib/format';
+import { formatNumber } from '@/lib/format';
 
 type TransactionsListProps = {
   purchases: Purchase[];
@@ -215,136 +220,67 @@ export default function TransactionsList({
             </Button>
           ) : null}
         </div>
-
-        <div className="flex flex-col gap-2 rounded-lg bg-muted px-3 py-2.5 text-xs text-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            <span className="font-semibold">{filteredPurchases.length}</span> purchases in view
-          </span>
-          <span className="font-medium">
-            {formatNumber(totalQty)} units · <Money value={totalAmount} className="font-semibold" />
-          </span>
-        </div>
       </CardHeader>
 
-      <div className="md:hidden">
-        {filteredPurchases.length === 0 ? (
-          <EmptyState title="No purchases found" description="Try a different date range, buyer, or search term." />
-        ) : (
-          <ul className="divide-y divide-border">
-            {filteredPurchases.map((p) => (
-              <li key={p.id} className="flex flex-col gap-2 px-4 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => setBuyerFilter(p.buyer_name)}
-                      className="truncate text-sm font-semibold text-foreground hover:text-primary"
-                    >
-                      {p.buyer_name}
-                    </button>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{p.item_description}</p>
-                  </div>
-                  <Money value={p.price} className="shrink-0 text-sm font-semibold" />
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>
-                    {p.date} · {p.quantity} qty
-                  </span>
+      {filteredPurchases.length === 0 ? (
+        <EmptyState title="No purchases found" description="Try a different date range, buyer, or search term." />
+      ) : (
+        <DataTable minWidth={760}>
+          <THead>
+            <tr>
+              <Th align="center">Sr</Th>
+              <Th>Date</Th>
+              <Th>Buyer / supplier</Th>
+              <Th>Item description</Th>
+              <Th align="center">Qty</Th>
+              <Th align="right">Amount (₹)</Th>
+              <Th align="center">Action</Th>
+            </tr>
+          </THead>
+          <tbody>
+            {filteredPurchases.map((p, idx) => (
+              <Tr key={p.id}>
+                <Td align="center">{idx + 1}</Td>
+                <Td>{p.date}</Td>
+                <Td>
+                  <button
+                    type="button"
+                    onClick={() => setBuyerFilter(p.buyer_name)}
+                    className="font-medium hover:text-primary hover:underline"
+                  >
+                    {p.buyer_name}
+                  </button>
+                </Td>
+                <Td className="max-w-xs truncate">{p.item_description}</Td>
+                <Td align="center">{p.quantity}</Td>
+                <Td align="right">
+                  <Money value={p.price} />
+                </Td>
+                <Td align="center">
                   <button
                     type="button"
                     onClick={() => handleDelete(p.id)}
                     disabled={loadingId === p.id}
-                    className="min-h-9 px-2 font-semibold text-destructive disabled:opacity-50"
+                    className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
                   >
                     {loadingId === p.id ? 'Deleting…' : 'Delete'}
                   </button>
-                </div>
-              </li>
+                </Td>
+              </Tr>
             ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="hidden md:block">
-        <TableWrap>
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-muted/70 text-muted-foreground">
-              <tr>
-                <th className="px-5 py-3 font-semibold">Date</th>
-                <th className="px-5 py-3 font-semibold">Buyer</th>
-                <th className="px-5 py-3 font-semibold">Item</th>
-                <th className="px-5 py-3 text-center font-semibold">Qty</th>
-                <th className="px-5 py-3 text-right font-semibold">Amount</th>
-                <th className="px-5 py-3 text-center font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredPurchases.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <EmptyState title="No purchases found" description="Try a different date range, buyer, or search term." />
-                  </td>
-                </tr>
-              ) : (
-                filteredPurchases.map((p) => (
-                  <tr key={p.id} className="hover:bg-muted/50">
-                    <td className="whitespace-nowrap px-5 py-3 text-muted-foreground">{p.date}</td>
-                    <td className="px-5 py-3">
-                      <button
-                        type="button"
-                        onClick={() => setBuyerFilter(p.buyer_name)}
-                        className="font-medium text-foreground hover:text-primary hover:underline"
-                      >
-                        {p.buyer_name}
-                      </button>
-                    </td>
-                    <td className="max-w-xs truncate px-5 py-3 text-muted-foreground">{p.item_description}</td>
-                    <td className="px-5 py-3 text-center font-medium tabular-nums">{p.quantity}</td>
-                    <td className="px-5 py-3 text-right font-semibold">
-                      <Money value={p.price} />
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(p.id)}
-                        disabled={loadingId === p.id}
-                        className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
-                      >
-                        {loadingId === p.id ? 'Deleting…' : 'Delete'}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-            {filteredPurchases.length > 0 ? (
-              <tfoot className="border-t border-border bg-muted/70 text-sm font-semibold">
-                <tr>
-                  <td colSpan={3} className="px-5 py-3">
-                    Total ({filteredPurchases.length} records)
-                  </td>
-                  <td className="px-5 py-3 text-center tabular-nums">{formatNumber(totalQty)}</td>
-                  <td className="px-5 py-3 text-right">
-                    <Money value={totalAmount} />
-                  </td>
-                  <td />
-                </tr>
-              </tfoot>
-            ) : null}
-          </table>
-        </TableWrap>
-      </div>
-
-      {filteredPurchases.length > 0 ? (
-        <CardBody className="border-t border-border py-3 md:hidden">
-          <div className="flex items-center justify-between text-sm font-semibold">
-            <span>Total</span>
-            <span>
-              {formatNumber(totalQty)} · {formatINR(totalAmount)}
-            </span>
-          </div>
-        </CardBody>
-      ) : null}
+          </tbody>
+          <TFoot>
+            <tr>
+              <Tf colSpan={4}>Total ({filteredPurchases.length} bills)</Tf>
+              <Tf align="center">{formatNumber(totalQty)}</Tf>
+              <Tf align="right">
+                <Money value={totalAmount} className="text-white" />
+              </Tf>
+              <Tf />
+            </tr>
+          </TFoot>
+        </DataTable>
+      )}
     </Card>
   );
 }

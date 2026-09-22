@@ -3,7 +3,22 @@
 import { Purchase } from '@/types';
 import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Card, CardDescription, CardHeader, CardTitle, EmptyState, FilterChip, Money } from '@/components/ui';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  DataTable,
+  EmptyState,
+  FilterChip,
+  Money,
+  TFoot,
+  THead,
+  Td,
+  Tf,
+  Th,
+  Tr,
+} from '@/components/ui';
 import { formatINR } from '@/lib/format';
 
 type AnalyticsProps = {
@@ -102,19 +117,46 @@ export default function Analytics({ purchases }: AnalyticsProps) {
         </div>
       </div>
 
-      <div className="border-t border-border">
-        <ul className="divide-y divide-border">
-          {data.map((item, index) => (
-            <li key={item.name} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
-              <span className="flex items-center gap-2 text-sm">
-                <span className="size-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                {item.name}
-              </span>
-              <Money value={item.value} className="text-sm font-semibold" />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <DataTable minWidth={480}>
+        <THead>
+          <tr>
+            <Th align="center">Sr</Th>
+            <Th>{view === 'buyer' ? 'Buyer' : 'Product'}</Th>
+            <Th align="right">Amount (₹)</Th>
+            <Th align="right">Share</Th>
+          </tr>
+        </THead>
+        <tbody>
+          {data.map((item, index) => {
+            const total = data.reduce((sum, row) => sum + row.value, 0);
+            const share = total > 0 ? (item.value / total) * 100 : 0;
+            return (
+              <Tr key={item.name}>
+                <Td align="center">{index + 1}</Td>
+                <Td>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                    {item.name}
+                  </span>
+                </Td>
+                <Td align="right">
+                  <Money value={item.value} />
+                </Td>
+                <Td align="right">{share.toFixed(1)}%</Td>
+              </Tr>
+            );
+          })}
+        </tbody>
+        <TFoot>
+          <tr>
+            <Tf colSpan={2}>Total</Tf>
+            <Tf align="right">
+              <Money value={data.reduce((sum, row) => sum + row.value, 0)} className="text-white" />
+            </Tf>
+            <Tf align="right">100%</Tf>
+          </tr>
+        </TFoot>
+      </DataTable>
     </Card>
   );
 }

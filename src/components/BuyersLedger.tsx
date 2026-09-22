@@ -4,8 +4,26 @@ import { Purchase, Payment, Buyer } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { Badge, Button, Card, CardBody, CardDescription, CardHeader, CardTitle, EmptyState, Field, Input, Money } from '@/components/ui';
-import { formatINR } from '@/lib/format';
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  DataTable,
+  EmptyState,
+  Field,
+  Input,
+  Money,
+  TFoot,
+  THead,
+  Td,
+  Tf,
+  Th,
+  Tr,
+} from '@/components/ui';
 
 type BuyersLedgerProps = {
   buyers: Buyer[];
@@ -46,6 +64,24 @@ export default function BuyersLedger({ buyers, purchases, payments, onUpdate }: 
       .sort((a, b) => b.due - a.due);
   }, [buyers, purchases, payments]);
 
+  const totals = useMemo(
+    () =>
+      buyerStats.reduce(
+        (acc, b) => ({
+          purchased: acc.purchased + b.totalPurchases,
+          paid: acc.paid + b.totalPaid,
+          due: acc.due + b.due,
+        }),
+        { purchased: 0, paid: 0, due: 0 }
+      ),
+    [buyerStats]
+  );
+
+  const selectedPayments = useMemo(
+    () => (selectedBuyer ? payments.filter((p) => p.buyer_name === selectedBuyer) : []),
+    [payments, selectedBuyer]
+  );
+
   const handleAddPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBuyer || paymentAmount <= 0) return;
@@ -63,7 +99,6 @@ export default function BuyersLedger({ buyers, purchases, payments, onUpdate }: 
       if (error) throw error;
 
       setPaymentAmount(0);
-      setSelectedBuyer(null);
       onUpdate();
     } catch (err) {
       console.error(err);
@@ -92,13 +127,13 @@ export default function BuyersLedger({ buyers, purchases, payments, onUpdate }: 
   };
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+    <div className="flex flex-col gap-5">
       <Card>
-        <CardHeader>
-          <CardTitle>Buyer accounts</CardTitle>
-          <CardDescription>Add a party, then record lump-sum payments against their dues.</CardDescription>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4">
+        <CardHeader className="gap-4">
+          <div>
+            <CardTitle>Buyer ledger</CardTitle>
+            <CardDescription>Party-wise purchase, payment, and outstanding due.</CardDescription>
+          </div>
           <form onSubmit={handleAddBuyer} className="flex flex-col gap-2 sm:flex-row">
             <Input
               type="text"
@@ -107,53 +142,70 @@ export default function BuyersLedger({ buyers, purchases, payments, onUpdate }: 
               onChange={(e) => setNewBuyerName(e.target.value)}
               required
               aria-label="New buyer name"
-              className="flex-1"
+              className="sm:max-w-xs"
             />
             <Button type="submit" disabled={loading || !newBuyerName.trim()} className="sm:w-auto">
               Add buyer
             </Button>
           </form>
+        </CardHeader>
 
-          <div className="flex flex-col gap-2">
-            {buyerStats.length === 0 ? (
-              <EmptyState title="No buyers yet" description="Add a buyer name to start the ledger." />
-            ) : (
-              buyerStats.map((buyer) => {
-                const selected = selectedBuyer === buyer.name;
-                return (
-                  <button
-                    key={buyer.name}
-                    type="button"
-                    onClick={() => setSelectedBuyer(buyer.name)}
-                    className={`rounded-xl border p-4 text-left transition-colors duration-200 ${
-                      selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40 hover:bg-muted/60'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="font-semibold">{buyer.name}</span>
-                      <Badge tone={buyer.due > 0 ? 'red' : 'green'}>
-                        {buyer.due > 0 ? `${formatINR(buyer.due)} due` : 'Settled'}
-                      </Badge>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span>
-                        Purchased <Money value={buyer.totalPurchases} className="text-foreground" />
-                      </span>
-                      <span>
-                        Paid <Money value={buyer.totalPaid} className="text-foreground" />
-                      </span>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </CardBody>
+        {buyerStats.length === 0 ? (
+          <EmptyState title="No buyers yet" description="Add a buyer name to start the ledger." />
+        ) : (
+          <DataTable minWidth={720}>
+            <THead>
+              <tr>
+                <Th align="center">Sr</Th>
+                <Th>Buyer / party</Th>
+                <Th align="right">Purchased (₹)</Th>
+                <Th align="right">Paid (₹)</Th>
+                <Th align="right">Due (₹)</Th>
+                <Th align="center">Status</Th>
+              </tr>
+            </THead>
+            <tbody>
+              {buyerStats.map((buyer, idx) => (
+                <Tr key={buyer.name} selected={selectedBuyer === buyer.name} onClick={() => setSelectedBuyer(buyer.name)}>
+                  <Td align="center">{idx + 1}</Td>
+                  <Td className="font-semibold">{buyer.name}</Td>
+                  <Td align="right">
+                    <Money value={buyer.totalPurchases} />
+                  </Td>
+                  <Td align="right">
+                    <Money value={buyer.totalPaid} />
+                  </Td>
+                  <Td align="right" className={buyer.due > 0 ? 'font-semibold text-red-600' : 'font-semibold text-emerald-700'}>
+                    <Money value={buyer.due} />
+                  </Td>
+                  <Td align="center">
+                    <Badge tone={buyer.due > 0 ? 'red' : 'green'}>{buyer.due > 0 ? 'Due' : 'Settled'}</Badge>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+            <TFoot>
+              <tr>
+                <Tf colSpan={2}>Total ({buyerStats.length} parties)</Tf>
+                <Tf align="right">
+                  <Money value={totals.purchased} className="text-white" />
+                </Tf>
+                <Tf align="right">
+                  <Money value={totals.paid} className="text-white" />
+                </Tf>
+                <Tf align="right">
+                  <Money value={totals.due} className="text-white" />
+                </Tf>
+                <Tf />
+              </tr>
+            </TFoot>
+          </DataTable>
+        )}
       </Card>
 
-      <Card className="h-fit">
-        {selectedBuyer ? (
-          <>
+      {selectedBuyer ? (
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <Card>
             <CardHeader>
               <CardTitle>Record payment</CardTitle>
               <CardDescription>Payment for {selectedBuyer}</CardDescription>
@@ -182,11 +234,50 @@ export default function BuyersLedger({ buyers, purchases, payments, onUpdate }: 
                 </div>
               </form>
             </CardBody>
-          </>
-        ) : (
-          <EmptyState title="Select a buyer" description="Tap a buyer on the left to record a lump-sum payment." />
-        )}
-      </Card>
+          </Card>
+
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Payment register — {selectedBuyer}</CardTitle>
+            </CardHeader>
+            {selectedPayments.length === 0 ? (
+              <EmptyState title="No payments yet" description="Record a lump-sum payment for this party." />
+            ) : (
+              <DataTable minWidth={480}>
+                <THead>
+                  <tr>
+                    <Th align="center">Sr</Th>
+                    <Th>Date</Th>
+                    <Th align="right">Amount paid (₹)</Th>
+                  </tr>
+                </THead>
+                <tbody>
+                  {selectedPayments.map((p, idx) => (
+                    <Tr key={p.id}>
+                      <Td align="center">{idx + 1}</Td>
+                      <Td>{p.date}</Td>
+                      <Td align="right" className="font-semibold text-emerald-700">
+                        <Money value={p.amount} />
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+                <TFoot>
+                  <tr>
+                    <Tf colSpan={2}>Total paid</Tf>
+                    <Tf align="right">
+                      <Money
+                        value={selectedPayments.reduce((sum, p) => sum + p.amount, 0)}
+                        className="text-white"
+                      />
+                    </Tf>
+                  </tr>
+                </TFoot>
+              </DataTable>
+            )}
+          </Card>
+        </div>
+      ) : null}
     </div>
   );
 }

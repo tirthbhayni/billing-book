@@ -11,13 +11,19 @@ import {
   CardBody,
   CardHeader,
   CardTitle,
+  DataTable,
   EmptyState,
   Field,
   Input,
   Money,
   Select,
   StatCard,
-  TableWrap,
+  TFoot,
+  THead,
+  Td,
+  Tf,
+  Th,
+  Tr,
 } from '@/components/ui';
 import { formatINR } from '@/lib/format';
 import { HandCoins, Package, Store, Wallet } from 'lucide-react';
@@ -156,81 +162,59 @@ export default function ReceivedPayments({ receivedPayments, onUpdate }: Receive
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Received history</CardTitle>
+            <CardTitle>Received register</CardTitle>
           </CardHeader>
-          <div className="md:hidden divide-y divide-border">
-            {receivedPayments.length === 0 ? (
-              <EmptyState
-                title="No received amounts yet"
-                description="Save money received from Meesho, Flipkart, Amazon, or other platforms."
-              />
-            ) : (
-              receivedPayments.map((p) => (
-                <div key={p.id} className="flex items-start justify-between gap-3 px-4 py-4">
-                  <div className="min-w-0">
-                    <Badge tone={platformTone(p.platform)}>{p.platform}</Badge>
-                    <p className="mt-2 text-xs text-muted-foreground">{p.date}</p>
-                  </div>
-                  <div className="text-right">
-                    <Money value={p.amount} className="text-sm font-semibold text-emerald-700" />
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(p.id)}
-                      disabled={deletingId === p.id}
-                      className="mt-1 block text-xs font-semibold text-destructive disabled:opacity-50"
-                    >
-                      {deletingId === p.id ? 'Deleting…' : 'Delete'}
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-          <div className="hidden md:block">
-            <TableWrap>
-              <table className="w-full text-left text-sm">
-                <thead className="bg-muted/70 text-muted-foreground">
-                  <tr>
-                    <th className="px-5 py-3 font-semibold">Date</th>
-                    <th className="px-5 py-3 font-semibold">Received from</th>
-                    <th className="px-5 py-3 text-right font-semibold">Received amount</th>
-                    <th className="px-5 py-3 text-center font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {receivedPayments.length === 0 ? (
-                    <tr>
-                      <td colSpan={4}>
-                        <EmptyState title="No received amounts yet" />
-                      </td>
-                    </tr>
-                  ) : (
-                    receivedPayments.map((p) => (
-                      <tr key={p.id} className="hover:bg-muted/50">
-                        <td className="px-5 py-3 text-muted-foreground">{p.date}</td>
-                        <td className="px-5 py-3">
-                          <Badge tone={platformTone(p.platform)}>{p.platform}</Badge>
-                        </td>
-                        <td className="px-5 py-3 text-right font-semibold text-emerald-700">
-                          <Money value={p.amount} />
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(p.id)}
-                            disabled={deletingId === p.id}
-                            className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
-                          >
-                            {deletingId === p.id ? 'Deleting…' : 'Delete'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </TableWrap>
-          </div>
+          {receivedPayments.length === 0 ? (
+            <EmptyState
+              title="No received amounts yet"
+              description="Save money received from Meesho, Flipkart, Amazon, or other platforms."
+            />
+          ) : (
+            <DataTable minWidth={560}>
+              <THead>
+                <tr>
+                  <Th align="center">Sr</Th>
+                  <Th>Date</Th>
+                  <Th>Received from</Th>
+                  <Th align="right">Received amount (₹)</Th>
+                  <Th align="center">Action</Th>
+                </tr>
+              </THead>
+              <tbody>
+                {receivedPayments.map((p, idx) => (
+                  <Tr key={p.id}>
+                    <Td align="center">{idx + 1}</Td>
+                    <Td>{p.date}</Td>
+                    <Td>
+                      <Badge tone={platformTone(p.platform)}>{p.platform}</Badge>
+                    </Td>
+                    <Td align="right" className="font-semibold text-emerald-700">
+                      <Money value={p.amount} />
+                    </Td>
+                    <Td align="center">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(p.id)}
+                        disabled={deletingId === p.id}
+                        className="rounded-md px-2 py-1 text-xs font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingId === p.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </Td>
+                  </Tr>
+                ))}
+              </tbody>
+              <TFoot>
+                <tr>
+                  <Tf colSpan={3}>Total ({receivedPayments.length} receipts)</Tf>
+                  <Tf align="right">
+                    <Money value={totalReceived} className="text-white" />
+                  </Tf>
+                  <Tf />
+                </tr>
+              </TFoot>
+            </DataTable>
+          )}
         </Card>
       </div>
     </div>

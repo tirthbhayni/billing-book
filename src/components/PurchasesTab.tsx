@@ -9,17 +9,22 @@ import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, isValid }
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   Badge,
-  Button,
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
+  DataTable,
   EmptyState,
   Input,
   Money,
   ProgressBar,
   StatCard,
-  TableWrap,
+  TFoot,
+  THead,
+  Td,
+  Tf,
+  Th,
+  Tr,
 } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { formatINR, formatNumber, formatQty } from '@/lib/format';
@@ -281,88 +286,71 @@ export default function PurchasesTab({ buyers, purchases, onUpdate }: PurchasesT
             </div>
           </CardHeader>
 
-          <div className="md:hidden divide-y divide-border">
-            {filteredBuyerBreakdown.length === 0 ? (
-              <EmptyState title="No buyer data" />
-            ) : (
-              filteredBuyerBreakdown.map((b) => (
-                <div key={b.name} className="flex flex-col gap-2 px-4 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-semibold">{b.name}</p>
-                    <Money value={b.totalAmount} className="text-sm font-semibold" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {b.count} bills · {formatQty(b.totalQty)} · avg {formatINR(b.avgBill, { maximumFractionDigits: 0 })}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <ProgressBar value={b.percentage} />
-                    <Button type="button" variant="ghost" className="h-9 min-h-9 px-2 text-xs" onClick={() => handleFilterByBuyer(b.name)}>
-                      View bills <ArrowRight className="size-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className="hidden md:block">
-            <TableWrap>
-              <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="bg-muted/70 text-muted-foreground">
-                  <tr>
-                    <th className="px-5 py-3 font-semibold">#</th>
-                    <th className="px-5 py-3 font-semibold">Buyer</th>
-                    <th className="px-5 py-3 text-center font-semibold">Bills</th>
-                    <th className="px-5 py-3 text-center font-semibold">Qty</th>
-                    <th className="px-5 py-3 text-right font-semibold">Purchase</th>
-                    <th className="px-5 py-3 text-right font-semibold">Avg / bill</th>
-                    <th className="px-5 py-3 text-center font-semibold">Share</th>
-                    <th className="px-5 py-3 text-center font-semibold">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredBuyerBreakdown.length === 0 ? (
-                    <tr>
-                      <td colSpan={8}>
-                        <EmptyState title="No buyer data" />
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredBuyerBreakdown.map((b, idx) => (
-                      <tr key={b.name} className="hover:bg-muted/50">
-                        <td className="px-5 py-3 text-muted-foreground">{idx + 1}</td>
-                        <td className="px-5 py-3 font-semibold">{b.name}</td>
-                        <td className="px-5 py-3 text-center">
-                          <Badge>{b.count}</Badge>
-                        </td>
-                        <td className="px-5 py-3 text-center tabular-nums">{formatQty(b.totalQty)}</td>
-                        <td className="px-5 py-3 text-right font-semibold">
-                          <Money value={b.totalAmount} />
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          <Money value={b.avgBill} />
-                        </td>
-                        <td className="px-5 py-3">
-                          <div className="flex justify-center">
-                            <ProgressBar value={b.percentage} />
-                          </div>
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleFilterByBuyer(b.name)}
-                            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-primary hover:bg-muted"
-                          >
-                            View bills <ArrowRight className="size-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </TableWrap>
-          </div>
+          {filteredBuyerBreakdown.length === 0 ? (
+            <EmptyState title="No buyer data" />
+          ) : (
+            <DataTable minWidth={860}>
+              <THead>
+                <tr>
+                  <Th align="center">Sr</Th>
+                  <Th>Buyer / supplier</Th>
+                  <Th align="center">Bills</Th>
+                  <Th align="center">Qty</Th>
+                  <Th align="right">Purchase (₹)</Th>
+                  <Th align="right">Avg / bill (₹)</Th>
+                  <Th align="center">Share</Th>
+                  <Th align="center">Action</Th>
+                </tr>
+              </THead>
+              <tbody>
+                {filteredBuyerBreakdown.map((b, idx) => (
+                  <Tr key={b.name}>
+                    <Td align="center">{idx + 1}</Td>
+                    <Td className="font-semibold">{b.name}</Td>
+                    <Td align="center">
+                      <Badge>{b.count}</Badge>
+                    </Td>
+                    <Td align="center">{formatQty(b.totalQty)}</Td>
+                    <Td align="right">
+                      <Money value={b.totalAmount} />
+                    </Td>
+                    <Td align="right">
+                      <Money value={b.avgBill} />
+                    </Td>
+                    <Td align="center">
+                      <div className="flex justify-center">
+                        <ProgressBar value={b.percentage} />
+                      </div>
+                    </Td>
+                    <Td align="center">
+                      <button
+                        type="button"
+                        onClick={() => handleFilterByBuyer(b.name)}
+                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-primary hover:bg-muted"
+                      >
+                        View bills <ArrowRight className="size-3.5" />
+                      </button>
+                    </Td>
+                  </Tr>
+                ))}
+              </tbody>
+              <TFoot>
+                <tr>
+                  <Tf colSpan={2}>Grand total ({buyerBreakdown.length})</Tf>
+                  <Tf align="center">{buyerBreakdown.reduce((sum, b) => sum + b.count, 0)}</Tf>
+                  <Tf align="center">{formatQty(buyerBreakdown.reduce((sum, b) => sum + b.totalQty, 0))}</Tf>
+                  <Tf align="right">
+                    <Money value={buyerBreakdown.reduce((sum, b) => sum + b.totalAmount, 0)} className="text-white" />
+                  </Tf>
+                  <Tf align="right">
+                    <Money value={avgBillAmount} className="text-white" />
+                  </Tf>
+                  <Tf align="center">100%</Tf>
+                  <Tf />
+                </tr>
+              </TFoot>
+            </DataTable>
+          )}
         </Card>
       )}
 
@@ -409,60 +397,58 @@ export default function PurchasesTab({ buyers, purchases, onUpdate }: PurchasesT
               <CardTitle>Month-wise breakdown</CardTitle>
               <CardDescription>Bills, quantity, and spend by month.</CardDescription>
             </CardHeader>
-            <div className="md:hidden divide-y divide-border">
-              {monthBreakdown.length === 0 ? (
-                <EmptyState title="No monthly data" />
-              ) : (
-                monthBreakdown.map((m) => (
-                  <div key={m.sortKey} className="flex flex-col gap-2 px-4 py-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-semibold">{m.label}</p>
-                      <Money value={m.totalAmount} className="text-sm font-semibold" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {m.count} bills · {formatQty(m.totalQty)}
-                    </p>
-                    <ProgressBar value={m.percentage} />
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="hidden md:block">
-              <TableWrap>
-                <table className="w-full min-w-[680px] text-left text-sm">
-                  <thead className="bg-muted/70 text-muted-foreground">
-                    <tr>
-                      <th className="px-5 py-3 font-semibold">Month</th>
-                      <th className="px-5 py-3 text-center font-semibold">Bills</th>
-                      <th className="px-5 py-3 text-center font-semibold">Qty</th>
-                      <th className="px-5 py-3 text-right font-semibold">Purchase</th>
-                      <th className="px-5 py-3 text-right font-semibold">Avg / bill</th>
-                      <th className="px-5 py-3 text-center font-semibold">Share</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {monthBreakdown.map((m) => (
-                      <tr key={m.sortKey} className="hover:bg-muted/50">
-                        <td className="px-5 py-3 font-semibold">{m.label}</td>
-                        <td className="px-5 py-3 text-center">{m.count}</td>
-                        <td className="px-5 py-3 text-center tabular-nums">{formatQty(m.totalQty)}</td>
-                        <td className="px-5 py-3 text-right font-semibold">
-                          <Money value={m.totalAmount} />
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          <Money value={m.avgBill} />
-                        </td>
-                        <td className="px-5 py-3">
-                          <div className="flex justify-center">
-                            <ProgressBar value={m.percentage} />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </TableWrap>
-            </div>
+            {monthBreakdown.length === 0 ? (
+              <EmptyState title="No monthly data" />
+            ) : (
+              <DataTable minWidth={720}>
+                <THead>
+                  <tr>
+                    <Th align="center">Sr</Th>
+                    <Th>Month</Th>
+                    <Th align="center">Bills</Th>
+                    <Th align="center">Qty</Th>
+                    <Th align="right">Purchase (₹)</Th>
+                    <Th align="right">Avg / bill (₹)</Th>
+                    <Th align="center">Share</Th>
+                  </tr>
+                </THead>
+                <tbody>
+                  {monthBreakdown.map((m, idx) => (
+                    <Tr key={m.sortKey}>
+                      <Td align="center">{idx + 1}</Td>
+                      <Td className="font-semibold">{m.label}</Td>
+                      <Td align="center">{m.count}</Td>
+                      <Td align="center">{formatQty(m.totalQty)}</Td>
+                      <Td align="right">
+                        <Money value={m.totalAmount} />
+                      </Td>
+                      <Td align="right">
+                        <Money value={m.avgBill} />
+                      </Td>
+                      <Td align="center">
+                        <div className="flex justify-center">
+                          <ProgressBar value={m.percentage} />
+                        </div>
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+                <TFoot>
+                  <tr>
+                    <Tf colSpan={2}>Grand total ({monthBreakdown.length} months)</Tf>
+                    <Tf align="center">{monthBreakdown.reduce((sum, m) => sum + m.count, 0)}</Tf>
+                    <Tf align="center">{formatQty(monthBreakdown.reduce((sum, m) => sum + m.totalQty, 0))}</Tf>
+                    <Tf align="right">
+                      <Money value={monthBreakdown.reduce((sum, m) => sum + m.totalAmount, 0)} className="text-white" />
+                    </Tf>
+                    <Tf align="right">
+                      <Money value={avgBillAmount} className="text-white" />
+                    </Tf>
+                    <Tf align="center">100%</Tf>
+                  </tr>
+                </TFoot>
+              </DataTable>
+            )}
           </Card>
         </div>
       )}
@@ -485,62 +471,61 @@ export default function PurchasesTab({ buyers, purchases, onUpdate }: PurchasesT
               />
             </div>
           </CardHeader>
-          <div className="md:hidden divide-y divide-border">
-            {filteredItemBreakdown.length === 0 ? (
-              <EmptyState title="No item data" />
-            ) : (
-              filteredItemBreakdown.map((i) => (
-                <div key={i.item} className="flex flex-col gap-2 px-4 py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-semibold">{i.item}</p>
-                    <Money value={i.totalAmount} className="shrink-0 text-sm font-semibold" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {i.count} orders · {formatQty(i.totalQty)} · avg {formatINR(i.avgPrice)}
-                  </p>
-                  <ProgressBar value={i.percentage} />
-                </div>
-              ))
-            )}
-          </div>
-          <div className="hidden md:block">
-            <TableWrap>
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="bg-muted/70 text-muted-foreground">
-                  <tr>
-                    <th className="px-5 py-3 font-semibold">#</th>
-                    <th className="px-5 py-3 font-semibold">Item</th>
-                    <th className="px-5 py-3 text-center font-semibold">Orders</th>
-                    <th className="px-5 py-3 text-center font-semibold">Qty</th>
-                    <th className="px-5 py-3 text-right font-semibold">Purchase</th>
-                    <th className="px-5 py-3 text-right font-semibold">Avg / unit</th>
-                    <th className="px-5 py-3 text-center font-semibold">Share</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredItemBreakdown.map((i, idx) => (
-                    <tr key={i.item} className="hover:bg-muted/50">
-                      <td className="px-5 py-3 text-muted-foreground">{idx + 1}</td>
-                      <td className="px-5 py-3 font-semibold">{i.item}</td>
-                      <td className="px-5 py-3 text-center">{i.count}</td>
-                      <td className="px-5 py-3 text-center tabular-nums">{formatQty(i.totalQty)}</td>
-                      <td className="px-5 py-3 text-right font-semibold">
-                        <Money value={i.totalAmount} />
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <Money value={i.avgPrice} />
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex justify-center">
-                          <ProgressBar value={i.percentage} />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TableWrap>
-          </div>
+          {filteredItemBreakdown.length === 0 ? (
+            <EmptyState title="No item data" />
+          ) : (
+            <DataTable minWidth={780}>
+              <THead>
+                <tr>
+                  <Th align="center">Sr</Th>
+                  <Th>Item description</Th>
+                  <Th align="center">Orders</Th>
+                  <Th align="center">Qty</Th>
+                  <Th align="right">Purchase (₹)</Th>
+                  <Th align="right">Avg / unit (₹)</Th>
+                  <Th align="center">Share</Th>
+                </tr>
+              </THead>
+              <tbody>
+                {filteredItemBreakdown.map((i, idx) => (
+                  <Tr key={i.item}>
+                    <Td align="center">{idx + 1}</Td>
+                    <Td className="font-semibold">{i.item}</Td>
+                    <Td align="center">{i.count}</Td>
+                    <Td align="center">{formatQty(i.totalQty)}</Td>
+                    <Td align="right">
+                      <Money value={i.totalAmount} />
+                    </Td>
+                    <Td align="right">
+                      <Money value={i.avgPrice} />
+                    </Td>
+                    <Td align="center">
+                      <div className="flex justify-center">
+                        <ProgressBar value={i.percentage} />
+                      </div>
+                    </Td>
+                  </Tr>
+                ))}
+              </tbody>
+              <TFoot>
+                <tr>
+                  <Tf colSpan={2}>Grand total ({itemBreakdown.length} items)</Tf>
+                  <Tf align="center">{itemBreakdown.reduce((sum, i) => sum + i.count, 0)}</Tf>
+                  <Tf align="center">{formatQty(itemBreakdown.reduce((sum, i) => sum + i.totalQty, 0))}</Tf>
+                  <Tf align="right">
+                    <Money value={itemBreakdown.reduce((sum, i) => sum + i.totalAmount, 0)} className="text-white" />
+                  </Tf>
+                  <Tf align="right">
+                    <Money
+                      value={totalQuantity > 0 ? totalPurchasesAmount / totalQuantity : 0}
+                      className="text-white"
+                    />
+                  </Tf>
+                  <Tf align="center">100%</Tf>
+                </tr>
+              </TFoot>
+            </DataTable>
+          )}
         </Card>
       )}
     </div>
